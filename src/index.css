@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== RESET BÁSICO ===== */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-gray-100 text-gray-800 antialiased;
+}
+
+/* ===== COMPONENTES REUTILIZÁVEIS ===== */
+@layer components {
+  .card {
+    @apply bg-white rounded-xl shadow p-6;
+  }
+
+  .card-title {
+    @apply text-gray-500 text-sm;
+  }
+
+  .card-value {
+    @apply text-3xl font-bold;
+  }
+
+  .btn {
+    @apply px-4 py-2 rounded font-medium transition;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-blue-700;
+  }
+
+  .btn-danger {
+    @apply bg-danger text-white hover:bg-red-700;
+  }
+
+  .table {
+    @apply w-full text-sm;
+  }
+
+  .table th {
+    @apply text-left text-gray-500 font-medium py-2;
+  }
+
+  .table td {
+    @apply py-2 border-t;
+  }
+}
