@@ -8,21 +8,87 @@ export const AdminService = {
     return data
   },
 
-  // ================= USERS =================
-  users: async (page = 1, limit = 20) => {
-    const { data } = await api.get(`/admin/users?page=${page}&limit=${limit}`)
-    return data
-  },
+// ================= USERS =================
 
-  userDetail: async (id: number) => {
-    const { data } = await api.get(`/admin/users/${id}`)
-    return data
-  },
+// LISTAR TODOS (SEM PAGINAÇÃO)
+users: async () => {
+  const { data } = await api.get('/admin/users')
+  return data
+},
 
-  updateUserRole: async (id: number, role: "USER" | "ADMIN") => {
-    const { data } = await api.patch(`/admin/users/${id}/role`, { role })
-    return data
-  },
+// DETALHES DO USUÁRIO
+userDetails: async (id: number) => {
+  const { data } = await api.get(`/admin/users/${id}`)
+  return data
+},
+
+// ATUALIZAR ROLE
+updateUserRole: async (
+  id: number,
+  role: 'USER' | 'ADMIN'
+) => {
+  const { data } = await api.patch(
+    `/admin/users/${id}/role`,
+    { role }
+  )
+  return data
+},
+
+// AJUSTAR SALDO (ADD / SUBTRACT)
+adjustUserBalance: async (
+  id: number,
+  payload: {
+    amount: number
+    action: 'ADD' | 'SUBTRACT'
+  }
+) => {
+  const { data } = await api.patch(
+    `/admin/users/${id}/balance`,
+    payload
+  )
+  return data
+},
+
+
+  // ================= BANKS (ADMIN) =================
+
+// LISTAR (ADMIN)
+banks: async () => {
+  const { data } = await api.get('/admin/bank-admin')
+  return data
+},
+
+// CRIAR
+createBank: async (payload: {
+  name: string
+  bank: string
+  iban: string
+}) => {
+  const { data } = await api.post('/admin/bank-admin', payload)
+  return data
+},
+
+// ATUALIZAR
+updateBank: async (
+  id: number,
+  payload: {
+    name?: string
+    bank?: string
+    iban?: string
+  }
+) => {
+  const { data } = await api.put(
+    `/admin/bank-admin/${id}`,
+    payload
+  )
+  return data
+},
+
+// REMOVER
+deleteBank: async (id: number) => {
+  await api.delete(`/admin/bank-admin/${id}`)
+},
+
 
   // ================= RECHARGES =================
   recharges: async () => {

@@ -9,6 +9,7 @@ import {
   Settings,
   Repeat,
   Gift,
+  Landmark,
 } from "lucide-react"
 
 const linkClass =
@@ -36,6 +37,10 @@ export default function Sidebar() {
           <ArrowDownUp size={18} /> Levantamentos
         </NavLink>
 
+        <NavLink to="/admin/banks" className={linkClass}>
+          <Landmark size={18} /> Bancos
+        </NavLink>
+
         <NavLink to="/admin/products" className={linkClass}>
           <Box size={18} /> Produtos
         </NavLink>
@@ -48,7 +53,6 @@ export default function Sidebar() {
           <Repeat size={18} /> Comissões
         </NavLink>
 
-        {/* 🎁 GIFT */}
         <NavLink to="/admin/gift" className={linkClass}>
           <Gift size={18} /> Gift
         </NavLink>

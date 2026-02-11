@@ -48,39 +48,43 @@ export default function Withdrawals() {
 
   // ================= EXPORT PDF =================
 
-  const exportPDF = () => {
-    const doc = new jsPDF()
+  const exportPDF = async () => {
+  // 🔥 BUSCAR DIRETAMENTE DO BACKEND (EXPORT)
+  const res = await api.get(
+    "/admin/withdrawals/export?status=PENDING"
+  )
 
-    doc.setFontSize(16)
-    doc.text("Lista de Saques", 14, 15)
+  const data = res.data || []
 
-    const rows = filtered.map((w) => {
-      const amount = Number(w.amount || 0)
-      const fee = Number(w.fee || 0)
+  const doc = new jsPDF()
+  doc.setFontSize(16)
+  doc.text("Lista de Saques Pendentes", 14, 15)
 
-      // 🔥 GARANTIA ABSOLUTA
-      const liquid =
-        w.liquid !== undefined
-          ? Number(w.liquid)
-          : amount - fee
+  const rows = data.map((w: any) => {
+    const amount = Number(w.amount || 0)
+    const fee = Number(w.fee || 0)
+    const liquid =
+      w.liquid !== undefined
+        ? Number(w.liquid)
+        : amount - fee
 
-      return [
-        w.userPhone || "-",
-        w.iban || "-",
-        amount.toFixed(2),
-        fee.toFixed(2),
-        liquid.toFixed(2),
-      ]
-    })
+    return [
+      w.userPhone || "-",
+      w.iban || "-",
+      amount.toFixed(2),
+      fee.toFixed(2),
+      liquid.toFixed(2),
+    ]
+  })
 
-    autoTable(doc, {
-      head: [["User", "IBAN", "Valor", "Taxa", "Líquido"]],
-      body: rows,
-      startY: 20,
-    })
+  autoTable(doc, {
+    head: [["Utilizador", "IBAN", "Valor", "Taxa", "Líquido"]],
+    body: rows,
+    startY: 20,
+  })
 
-    doc.save("withdrawals.pdf")
-  }
+  doc.save("withdrawals-pendentes.pdf")
+}
 
   // ================= UI =================
 
