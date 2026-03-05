@@ -5,6 +5,7 @@ import { AdminService } from "../../services/admin.service"
 interface User {
   id: number
   phone: string
+  email: string
   balance: number
   role: string
   isBlocked?: boolean
@@ -263,6 +264,7 @@ export default function Users() {
   <p><b>ID:</b> {selectedUser.id}</p>
 
   <p><b>Telefone:</b> {selectedUser.phone}</p>
+  <p><b>Email:</b> {selectedUser.email || "Não definido"}</p>
 
   {selectedUser.fullName && (
     <p><b>Nome:</b> {selectedUser.fullName}</p>
