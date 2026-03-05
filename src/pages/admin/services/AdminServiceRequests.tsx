@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { AdminService } from "../../../services/admin.service"
+import toast from "react-hot-toast"
 
 interface ServiceRequest {
   id: number
@@ -31,27 +32,24 @@ export default function AdminServiceRequests() {
     try {
       setLoading(true)
       const res = await AdminService.getServiceRequests()
-      setData(res.data || [])
+      setData(res.items ?? [])
     } catch (error) {
-      console.error(error)
+      toast.error("Erro ao carregar serviços")
     } finally {
       setLoading(false)
     }
   }
 
   async function handleComplete(id: number) {
-    const confirmStep = window.confirm(
-      "Confirmar conclusão do serviço?"
-    )
-
-    if (!confirmStep) return
+    if (!window.confirm("Confirmar conclusão do serviço?")) return
 
     try {
       setActionLoading(id)
       await AdminService.completeService(id)
+      toast.success("Serviço concluído")
       await fetchData()
-    } catch (error) {
-      alert("Falha ao concluir serviço")
+    } catch {
+      toast.error("Falha ao concluir serviço")
     } finally {
       setActionLoading(null)
     }
@@ -62,25 +60,39 @@ export default function AdminServiceRequests() {
   }, [])
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-10 space-y-10">
 
-      <h1 className="text-2xl font-bold">
-        Service Requests
-      </h1>
+      {/* HEADER */}
+      <div>
+        <h1 className="text-2xl font-semibold text-white">
+          Service Requests
+        </h1>
+        <p className="text-gray-400 text-sm mt-1">
+          Gestão institucional de pedidos de serviço
+        </p>
+      </div>
 
-      <div className="bg-gray-900 rounded-xl overflow-x-auto">
+      {/* TABLE */}
+      <div
+        className="
+          bg-[#14171A]
+          border border-[#1E2329]
+          rounded-2xl
+          overflow-hidden
+        "
+      >
 
-        <table className="w-full text-sm text-white">
+        <table className="w-full text-sm text-gray-300">
 
-          <thead className="bg-gray-800 text-gray-200">
+          <thead className="bg-[#1A1F24] text-gray-400">
             <tr>
-              <th className="p-3 text-left">ID</th>
-              <th className="p-3 text-left">User</th>
-              <th className="p-3 text-left">Partner</th>
-              <th className="p-3 text-left">Plan</th>
-              <th className="p-3 text-left">Amount</th>
-              <th className="p-3 text-left">Status</th>
-              <th className="p-3 text-left">Actions</th>
+              <Th>ID</Th>
+              <Th>User</Th>
+              <Th>Partner</Th>
+              <Th>Plan</Th>
+              <Th>Amount</Th>
+              <Th>Status</Th>
+              <Th>Actions</Th>
             </tr>
           </thead>
 
@@ -88,7 +100,10 @@ export default function AdminServiceRequests() {
 
             {data.length === 0 && !loading && (
               <tr>
-                <td colSpan={7} className="p-6 text-center text-gray-400">
+                <td
+                  colSpan={7}
+                  className="px-6 py-8 text-center text-gray-500"
+                >
                   Nenhum registro encontrado.
                 </td>
               </tr>
@@ -97,54 +112,55 @@ export default function AdminServiceRequests() {
             {data.map((r) => (
               <tr
                 key={r.id}
-                className="border-b border-gray-800 hover:bg-gray-800 transition"
+                className="
+                  border-t border-[#1E2329]
+                  hover:bg-[#181C21]
+                  transition
+                "
               >
 
-                <td className="p-3">{r.id}</td>
+                <Td className="text-[#FCD535] font-semibold">
+                  #{r.id}
+                </Td>
 
-                <td className="p-3">
-                  {r.user.phone}
-                </td>
+                <Td>{r.user?.phone ?? "-"}</Td>
 
-                <td className="p-3">
-                  {r.plan.partner.name}
-                </td>
+                <Td>{r.plan?.partner?.name ?? "-"}</Td>
 
-                <td className="p-3">
-                  {r.plan.name}
-                </td>
+                <Td className="font-medium">
+                  {r.plan?.name ?? "-"}
+                </Td>
 
-                <td className="p-3">
-                  {r.amount.toFixed(2)} AOA
-                </td>
+                <Td>
+                  {formatMoney(r.amount)}
+                </Td>
 
-                <td className="p-3">
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-semibold ${
-                      r.status === "IN_PROGRESS"
-                        ? "bg-yellow-600"
-                        : r.status === "COMPLETED"
-                        ? "bg-green-600"
-                        : "bg-red-600"
-                    }`}
-                  >
-                    {r.status}
-                  </span>
-                </td>
+                <Td>
+                  <StatusBadge status={r.status} />
+                </Td>
 
-                <td className="p-3">
+                <Td>
                   {r.status === "IN_PROGRESS" && (
                     <button
                       disabled={actionLoading === r.id}
                       onClick={() => handleComplete(r.id)}
-                      className="bg-blue-600 px-3 py-1 rounded text-xs hover:bg-blue-700 transition disabled:opacity-50"
+                      className="
+                        bg-[#FCD535]
+                        text-black
+                        px-4 py-1.5
+                        rounded-lg
+                        text-xs
+                        hover:scale-105
+                        transition
+                        disabled:opacity-50
+                      "
                     >
                       {actionLoading === r.id
                         ? "Processando..."
-                        : "Complete"}
+                        : "Concluir"}
                     </button>
                   )}
-                </td>
+                </Td>
 
               </tr>
             ))}
@@ -153,7 +169,7 @@ export default function AdminServiceRequests() {
         </table>
 
         {loading && (
-          <div className="p-4 text-center text-gray-400">
+          <div className="p-6 text-center text-gray-500">
             Carregando...
           </div>
         )}
@@ -162,4 +178,56 @@ export default function AdminServiceRequests() {
 
     </div>
   )
+}
+
+/* ========================= */
+
+function StatusBadge({
+  status
+}: {
+  status: "IN_PROGRESS" | "COMPLETED" | "REJECTED"
+}) {
+
+  const map: Record<string, string> = {
+    IN_PROGRESS: "bg-yellow-900/40 text-yellow-400",
+    COMPLETED: "bg-green-900/40 text-green-400",
+    REJECTED: "bg-red-900/40 text-red-400",
+  }
+
+  return (
+    <span
+      className={`
+        px-3 py-1
+        rounded-full
+        text-xs
+        font-medium
+        ${map[status]}
+      `}
+    >
+      {status}
+    </span>
+  )
+}
+
+function Th({ children }: any) {
+  return (
+    <th className="px-6 py-4 text-left font-medium">
+      {children}
+    </th>
+  )
+}
+
+function Td({ children, className = "" }: any) {
+  return (
+    <td className={`px-6 py-4 ${className}`}>
+      {children}
+    </td>
+  )
+}
+
+function formatMoney(value: number) {
+  return new Intl.NumberFormat("pt-AO", {
+    style: "currency",
+    currency: "AOA"
+  }).format(value ?? 0)
 }

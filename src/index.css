@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== RESET BÁSICO ===== */
+/* ================= GLOBAL RESET ================= */
+
 html,
 body,
 #root {
@@ -10,44 +11,91 @@ body,
 }
 
 body {
-  @apply bg-gray-100 text-gray-800 antialiased;
+  @apply bg-[#0B0E11] text-gray-200 antialiased;
 }
 
-/* ===== COMPONENTES REUTILIZÁVEIS ===== */
+/* ================= SCROLL PROFISSIONAL ================= */
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #1E2329;
+  border-radius: 10px;
+}
+
+/* ================= COMPONENTES GLOBAIS ================= */
+
 @layer components {
+
+  /* ===== CARD PROFISSIONAL ===== */
+
   .card {
-    @apply bg-white rounded-xl shadow p-6;
+    @apply bg-[#14171A] border border-[#1E2329] rounded-2xl p-6 transition;
+  }
+
+  .card-hover {
+    @apply hover:bg-[#1A1F24];
   }
 
   .card-title {
-    @apply text-gray-500 text-sm;
+    @apply text-gray-400 text-sm;
   }
 
   .card-value {
-    @apply text-3xl font-bold;
+    @apply text-2xl font-semibold text-white;
   }
 
+  /* ===== BOTÕES ===== */
+
   .btn {
-    @apply px-4 py-2 rounded font-medium transition;
+    @apply px-4 py-2 rounded-lg text-sm font-medium transition;
   }
 
   .btn-primary {
-    @apply bg-primary text-white hover:bg-blue-700;
+    @apply bg-[#FCD535] text-black hover:bg-[#f0c419];
   }
 
   .btn-danger {
-    @apply bg-danger text-white hover:bg-red-700;
+    @apply bg-[#F6465D] text-white hover:opacity-90;
   }
 
+  .btn-dark {
+    @apply bg-[#1A1F24] text-gray-300 hover:bg-[#23272F];
+  }
+
+  /* ===== TABELA PROFISSIONAL ===== */
+
   .table {
-    @apply w-full text-sm;
+    @apply w-full text-sm text-gray-300;
+  }
+
+  .table thead {
+    @apply bg-[#14171A] text-gray-400;
   }
 
   .table th {
-    @apply text-left text-gray-500 font-medium py-2;
+    @apply text-left font-medium py-3 px-4;
   }
 
   .table td {
-    @apply py-2 border-t;
+    @apply py-3 px-4 border-b border-[#1E2329];
   }
+
+  .table tr:hover {
+    @apply bg-[#14171A];
+  }
+
+  /* ===== INPUT ===== */
+
+  .input {
+    @apply bg-[#14171A] border border-[#1E2329] rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#2A2F36] transition;
+  }
+
 }

@@ -23,7 +23,7 @@ export default function OtcOrders() {
     try {
       setLoading(true)
       const res = await AdminService.otcOrders()
-      setOrders(res.items)
+      setOrders(res.items || [])
     } catch (err) {
       console.error(err)
       toast.error("Erro ao carregar ordens")
@@ -49,73 +49,147 @@ export default function OtcOrders() {
   }, [])
 
   if (loading)
-    return <div className="p-6">Carregando...</div>
+    return (
+      <div className="p-10 text-gray-400">
+        Carregando ordens...
+      </div>
+    )
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-10 space-y-8">
 
-      <h1 className="text-2xl font-bold">
-        Ordens OTC
-      </h1>
+      {/* HEADER */}
+      <div>
+        <h1 className="text-2xl font-semibold text-white">
+          Ordens OTC
+        </h1>
+        <p className="text-gray-400 text-sm mt-1">
+          Gestão institucional das ordens OTC
+        </p>
+      </div>
 
-      <table className="w-full bg-white shadow rounded-xl text-sm">
-        <thead className="border-b bg-gray-50">
-          <tr>
-            <th className="p-3 text-left">ID</th>
-            <th className="p-3 text-left">Utilizador</th>
-            <th className="p-3 text-left">Asset</th>
-            <th className="p-3 text-left">Tipo</th>
-            <th className="p-3 text-left">Quantidade</th>
-            <th className="p-3 text-left">Total</th>
-            <th className="p-3 text-left">Status</th>
-            <th className="p-3 text-left">Ação</th>
-          </tr>
-        </thead>
+      {/* TABLE CARD */}
+      <div className="bg-[#14171A] border border-[#1E2329] rounded-2xl overflow-hidden">
 
-        <tbody>
-          {orders.map(o => (
-            <tr key={o.id} className="border-b hover:bg-gray-50">
+        <table className="w-full text-sm text-gray-300">
 
-              <td className="p-3 text-blue-600 font-semibold">
-                <Link to={`/admin/otc/orders/${o.id}`}>
-                  #{o.id}
-                </Link>
-              </td>
-
-              <td className="p-3">{o.user?.phone}</td>
-              <td className="p-3">{o.asset?.symbol}</td>
-              <td className="p-3">{o.type}</td>
-              <td className="p-3">{o.quantity}</td>
-              <td className="p-3">
-                {o.totalAoa.toLocaleString()} Kz
-              </td>
-
-              <td className="p-3">
-                <span className={`px-3 py-1 rounded-full text-xs font-medium
-                  ${o.status === "PENDING" && "bg-yellow-100 text-yellow-700"}
-                  ${o.status === "RELEASED" && "bg-green-100 text-green-700"}
-                  ${o.status === "EXPIRED" && "bg-gray-200 text-gray-700"}
-                `}>
-                  {o.status}
-                </span>
-              </td>
-
-              <td className="p-3">
-                {o.status === "PENDING" && (
-                  <button
-                    onClick={() => cancel(o.id)}
-                    className="bg-red-600 text-white px-3 py-1 rounded"
-                  >
-                    Cancelar
-                  </button>
-                )}
-              </td>
-
+          <thead className="bg-[#1A1F24] text-gray-400">
+            <tr>
+              <th className="px-6 py-4 text-left font-medium">ID</th>
+              <th className="px-6 py-4 text-left font-medium">Utilizador</th>
+              <th className="px-6 py-4 text-left font-medium">Asset</th>
+              <th className="px-6 py-4 text-left font-medium">Tipo</th>
+              <th className="px-6 py-4 text-left font-medium">Quantidade</th>
+              <th className="px-6 py-4 text-left font-medium">Total</th>
+              <th className="px-6 py-4 text-left font-medium">Status</th>
+              <th className="px-6 py-4 text-left font-medium">Ação</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {orders.map(o => (
+              <tr
+                key={o.id}
+                className="
+                  border-t border-[#1E2329]
+                  hover:bg-[#181C21]
+                  transition
+                "
+              >
+
+                <td className="px-6 py-4">
+                  <Link
+                    to={`/admin/otc/orders/${o.id}`}
+                    className="
+                      text-[#FCD535]
+                      font-semibold
+                      hover:underline
+                    "
+                  >
+                    #{o.id}
+                  </Link>
+                </td>
+
+                <td className="px-6 py-4">
+                  {o.user?.phone || "-"}
+                </td>
+
+                <td className="px-6 py-4 font-medium">
+                  {o.asset?.symbol}
+                </td>
+
+                <td
+                  className={`
+                    px-6 py-4 font-semibold
+                    ${o.type === "BUY" ? "text-green-400" : "text-red-400"}
+                  `}
+                >
+                  {o.type}
+                </td>
+
+                <td className="px-6 py-4">
+                  {o.quantity}
+                </td>
+
+                <td className="px-6 py-4 font-medium">
+                  {o.totalAoa.toLocaleString()} Kz
+                </td>
+
+                <td className="px-6 py-4">
+                  <StatusBadge status={o.status} />
+                </td>
+
+                <td className="px-6 py-4">
+                  {o.status === "PENDING" && (
+                    <button
+                      onClick={() => cancel(o.id)}
+                      className="
+                        bg-[#F6465D]
+                        text-white
+                        px-4 py-1.5
+                        rounded-lg
+                        text-xs
+                        hover:scale-105
+                        transition
+                      "
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </td>
+
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
+
+      </div>
 
     </div>
+  )
+}
+
+/* =========================
+   STATUS BADGE
+========================= */
+
+function StatusBadge({ status }: { status: string }) {
+
+  const base = "px-3 py-1 rounded-full text-xs font-medium"
+
+  const map: Record<string, string> = {
+    PENDING: "bg-yellow-900/40 text-yellow-400",
+    PAID: "bg-blue-900/40 text-blue-400",
+    RELEASED: "bg-green-900/40 text-green-400",
+    CANCELLED: "bg-red-900/40 text-red-400",
+    EXPIRED: "bg-gray-700 text-gray-300",
+    DISPUTED: "bg-orange-900/40 text-orange-400"
+  }
+
+  return (
+    <span className={`${base} ${map[status] || "bg-[#1A1F24] text-gray-300"}`}>
+      {status}
+    </span>
   )
 }

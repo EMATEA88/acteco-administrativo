@@ -55,83 +55,149 @@ export default function AdminTransactions() {
   })
 
   if (loading) {
-    return <div className="p-6">Carregando transações...</div>
+    return (
+      <div className="p-8 text-gray-400">
+        Carregando transações...
+      </div>
+    )
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-8 text-white">
 
-      <h1 className="text-2xl font-bold">Transações</h1>
+      {/* HEADER */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Transações
+        </h1>
+      </div>
 
-      <input
-        placeholder="Pesquisar por ID, telefone ou tipo"
-        className="border px-3 py-2 rounded w-80"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      {/* SEARCH */}
+      <div>
+        <input
+          placeholder="Pesquisar por ID, telefone ou tipo"
+          className="
+            bg-gray-900
+            border border-gray-800
+            px-4 py-2
+            rounded-xl
+            w-96
+            text-sm
+            focus:outline-none
+            focus:ring-2
+            focus:ring-emerald-500
+            transition
+          "
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
-      <DataTable
-        data={filtered}
-        columns={[
-          { key: "id", label: "ID" },
+      {/* TABLE CARD */}
+      <div className="
+        bg-gray-950
+        border border-gray-800
+        rounded-2xl
+        shadow-xl
+        overflow-hidden
+      ">
+        <DataTable
+          data={filtered}
+          columns={[
+            {
+              key: "id",
+              label: "ID",
+              render: (r: Transaction) => (
+                <span className="text-gray-400 text-xs font-medium">
+                  #{r.id}
+                </span>
+              )
+            },
 
-          {
-            key: "user",
-            label: "Telefone",
-            render: (r: Transaction) =>
-              r.user?.phone || "-"
-          },
+            {
+              key: "user",
+              label: "Telefone",
+              render: (r: Transaction) =>
+                <span className="font-semibold text-white">
+                  {r.user?.phone || "-"}
+                </span>
+            },
 
-          {
-            key: "type",
-            label: "Tipo",
-            render: (r: Transaction) =>
-              <TypeBadge type={r.type} />
-          },
+            {
+              key: "type",
+              label: "Tipo",
+              render: (r: Transaction) =>
+                <TypeBadge type={r.type} />
+            },
 
-          {
-            key: "amount",
-            label: "Valor",
-            render: (r: Transaction) =>
-              formatMoney(r.amount)
-          },
+            {
+              key: "amount",
+              label: "Valor",
+              render: (r: Transaction) =>
+                <Amount value={r.amount} type={r.type} />
+            },
 
-          {
-            key: "createdAt",
-            label: "Data",
-            render: (r: Transaction) =>
-              formatDate(r.createdAt)
-          },
-        ]}
-      />
+            {
+              key: "createdAt",
+              label: "Data",
+              render: (r: Transaction) =>
+                <span className="text-gray-400 text-xs">
+                  {formatDate(r.createdAt)}
+                </span>
+            },
+          ]}
+        />
+      </div>
+
     </div>
   )
 }
 
+/* ================= AMOUNT ================= */
+
+function Amount({ value, type }: { value: number; type: string }) {
+
+  const creditTypes = ["RECHARGE", "SELL_CREDIT", "COMMISSION", "GIFT"]
+
+  const isCredit = creditTypes.includes(type)
+
+  return (
+    <span className={`font-semibold ${
+      isCredit ? "text-emerald-400" : "text-red-400"
+    }`}>
+      {formatMoney(value)}
+    </span>
+  )
+}
+
+/* ================= BADGES ================= */
+
 function TypeBadge({ type }: { type: string }) {
 
   const styles: Record<string, string> = {
-    RECHARGE: "bg-green-100 text-green-700",
-    WITHDRAW: "bg-red-100 text-red-700",
-    BUY_DEBIT: "bg-orange-100 text-orange-700",
-    SELL_CREDIT: "bg-emerald-100 text-emerald-700",
-    SERVICE_DEBIT: "bg-indigo-100 text-indigo-700",
-    COMMISSION: "bg-purple-100 text-purple-700",
-    GIFT: "bg-pink-100 text-pink-700",
+    RECHARGE: "bg-emerald-600/20 text-emerald-400",
+    WITHDRAW: "bg-red-600/20 text-red-400",
+    BUY_DEBIT: "bg-orange-600/20 text-orange-400",
+    SELL_CREDIT: "bg-emerald-600/20 text-emerald-400",
+    SERVICE_DEBIT: "bg-indigo-600/20 text-indigo-400",
+    COMMISSION: "bg-purple-600/20 text-purple-400",
+    GIFT: "bg-pink-600/20 text-pink-400",
   }
 
   return (
-    <span className={`px-2 py-1 rounded text-xs font-semibold ${styles[type] || "bg-gray-100 text-gray-600"}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[type] || "bg-gray-600/20 text-gray-400"}`}>
       {type}
     </span>
   )
 }
 
+/* ================= UTILS ================= */
+
 function formatMoney(value: number) {
   return new Intl.NumberFormat("pt-AO", {
     style: "currency",
     currency: "AOA",
-  }).format(value)
+  }).format(value ?? 0)
 }
 
 function formatDate(date: string) {

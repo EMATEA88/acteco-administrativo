@@ -14,7 +14,7 @@ export interface AdminLogItem {
 }
 
 export interface AdminLogResponse {
-  items: AdminLogItem[]
+  logs: AdminLogItem[]
   total: number
   page: number
   totalPages: number
@@ -34,7 +34,7 @@ export class AdminLogService {
     if (action) params.action = action
     if (entity) params.entity = entity
 
-    const res = await api.get("/admin/logs", { params })
+    const res = await api.get("/admin/log", { params })
 
     return res.data
   }

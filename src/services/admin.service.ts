@@ -39,9 +39,9 @@ export const AdminService = {
 
   // ================= FINANCE =================
   finance: async () => {
-    const { data } = await api.get("/admin/finance/overview")
-    return data
-  },
+  const { data } = await api.get("/admin/dashboard")
+  return data
+},
 
   // ================= USERS =================
   users: async () => {
@@ -211,15 +211,17 @@ export const AdminService = {
   },
 
   // ================= SERVICE REQUESTS =================
-  getServiceRequests: async () => {
-    const { data } = await api.get("/admin/service-requests")
-    return data
-  },
+getServiceRequests: async () => {
+  const { data } = await api.get("/admin/services")
+  return data
+},
 
-  completeService: async (id: number) => {
-    const { data } = await api.patch(`/admin/service-requests/${id}/complete`)
-    return data
-  },
+completeService: async (id: number) => {
+  const { data } = await api.patch(
+    `/admin/services/${id}/complete`
+  )
+  return data
+},
 
   // ================= SETTLEMENTS =================
   getSettlements: async (params?: any) => {

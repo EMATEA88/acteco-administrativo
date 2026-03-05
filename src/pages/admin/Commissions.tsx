@@ -62,83 +62,115 @@ export default function AdminCommissions() {
 
   if (loading) {
     return (
-      <div className="p-6 text-sm text-gray-500">
-        A carregar comissões…
+      <div className="p-8 text-gray-400">
+        A carregar comissões...
       </div>
     )
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-8 text-white">
 
+      {/* HEADER */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Comissões</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Comissões
+        </h1>
 
-        <div className="text-sm font-semibold">
-          Total: {formatMoney(total)}
+        <div className="text-lg font-semibold text-emerald-400">
+          {formatMoney(total)}
         </div>
       </div>
 
-      <input
-        placeholder="Pesquisar por ID, telefone ou tipo"
-        className="border px-3 py-2 rounded w-80"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      {/* SEARCH */}
+      <div>
+        <input
+          placeholder="Pesquisar por ID, telefone ou tipo"
+          className="
+            bg-gray-900
+            border border-gray-800
+            px-4 py-2
+            rounded-xl
+            w-96
+            text-sm
+            focus:outline-none
+            focus:ring-2
+            focus:ring-emerald-500
+            transition
+          "
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
-      <DataTable
-        data={filtered}
-        columns={[
-          { key: "id", label: "ID" },
+      {/* TABLE CARD */}
+      <div className="
+        bg-gray-950
+        border border-gray-800
+        rounded-2xl
+        shadow-xl
+        overflow-hidden
+      ">
+        <DataTable
+          data={filtered}
+          columns={[
+            { key: "id", label: "ID" },
 
-          {
-            key: "user",
-            label: "Telefone",
-            render: (row: Commission) =>
-              row.user?.phone || "-",
-          },
+            {
+              key: "user",
+              label: "Telefone",
+              render: (row: Commission) =>
+                row.user?.phone || "-",
+            },
 
-          {
-            key: "level",
-            label: "Nível",
-            render: (row: Commission) =>
-              <LevelBadge level={row.level} />
-          },
+            {
+              key: "level",
+              label: "Nível",
+              render: (row: Commission) =>
+                <LevelBadge level={row.level} />
+            },
 
-          {
-            key: "type",
-            label: "Tipo",
-            render: (row: Commission) =>
-              <TypeBadge type={row.type} />
-          },
+            {
+              key: "type",
+              label: "Tipo",
+              render: (row: Commission) =>
+                <TypeBadge type={row.type} />
+            },
 
-          {
-            key: "amount",
-            label: "Valor",
-            render: (row: Commission) =>
-              formatMoney(row.amount),
-          },
+            {
+              key: "amount",
+              label: "Valor",
+              render: (row: Commission) =>
+                <span className="text-yellow-400 font-semibold">
+                  {formatMoney(row.amount)}
+                </span>,
+            },
 
-          {
-            key: "createdAt",
-            label: "Data",
-            render: (row: Commission) =>
-              formatDate(row.createdAt),
-          },
-        ]}
-      />
+            {
+              key: "createdAt",
+              label: "Data",
+              render: (row: Commission) =>
+                <span className="text-gray-400 text-xs">
+                  {formatDate(row.createdAt)}
+                </span>,
+            },
+          ]}
+        />
+      </div>
     </div>
   )
 }
 
+/* ================= BADGES ================= */
+
 function TypeBadge({ type }: { type: string }) {
 
   const styles: Record<string, string> = {
-    RECHARGE: "bg-green-100 text-green-700",
+    RECHARGE: "bg-emerald-600/20 text-emerald-400",
   }
 
   return (
-    <span className={`px-2 py-1 rounded text-xs font-semibold ${styles[type] || "bg-gray-100 text-gray-600"}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[type] || "bg-gray-600/20 text-gray-400"}`}>
       {type}
     </span>
   )
@@ -147,23 +179,25 @@ function TypeBadge({ type }: { type: string }) {
 function LevelBadge({ level }: { level: number }) {
 
   const colors: Record<number, string> = {
-    1: "bg-blue-100 text-blue-700",
-    2: "bg-indigo-100 text-indigo-700",
-    3: "bg-purple-100 text-purple-700",
+    1: "bg-blue-600/20 text-blue-400",
+    2: "bg-indigo-600/20 text-indigo-400",
+    3: "bg-purple-600/20 text-purple-400",
   }
 
   return (
-    <span className={`px-2 py-1 rounded text-xs font-semibold ${colors[level] || "bg-gray-100 text-gray-600"}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${colors[level] || "bg-gray-600/20 text-gray-400"}`}>
       Nível {level}
     </span>
   )
 }
 
+/* ================= UTILS ================= */
+
 function formatMoney(value: number) {
   return new Intl.NumberFormat("pt-AO", {
     style: "currency",
     currency: "AOA",
-  }).format(value)
+  }).format(value ?? 0)
 }
 
 function formatDate(date: string) {

@@ -29,7 +29,6 @@ export default function AdminDashboard() {
         totalBalance: res.totalBalance ?? 0,
         totalInvested: res.totalInvested ?? 0
       })
-
     } catch (err) {
       console.error("Dashboard error", err)
     } finally {
@@ -37,49 +36,61 @@ export default function AdminDashboard() {
     }
   }
 
-  if (loading) {
-    return <div className="p-6 text-gray-400">Carregando dashboard...</div>
-  }
+  if (loading)
+    return (
+      <div className="p-10 text-gray-400">
+        Carregando dashboard...
+      </div>
+    )
 
-  if (!data) {
-    return <div className="p-6 text-red-500">Erro ao carregar dashboard</div>
-  }
+  if (!data)
+    return (
+      <div className="p-10 text-red-500">
+        Erro ao carregar dashboard
+      </div>
+    )
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-10 space-y-12">
 
-      <h1 className="text-2xl font-bold text-white">
-        Admin Financial Overview
-      </h1>
+      {/* HEADER */}
+      <div>
+        <h1 className="text-2xl font-semibold text-white">
+          Financial Overview
+        </h1>
+        <p className="text-gray-400 text-sm mt-1">
+          Painel institucional de métricas financeiras
+        </p>
+      </div>
 
       {/* ================= KPIs ================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
 
         <KpiCard
           title="Total Usuários"
           value={data.totalUsers}
-          color="text-blue-400"
+          accent="blue"
         />
 
         <KpiCard
           title="Total Depósitos"
           value={data.totalRecharges}
           money
-          color="text-green-400"
+          accent="green"
         />
 
         <KpiCard
           title="Total Levantamentos"
           value={data.totalWithdrawals}
           money
-          color="text-red-400"
+          accent="red"
         />
 
         <KpiCard
           title="Saldo Geral"
           value={data.totalBalance}
           money
-          color="text-yellow-400"
+          accent="yellow"
         />
 
         {data.totalInvested !== undefined && (
@@ -87,37 +98,44 @@ export default function AdminDashboard() {
             title="Total Investido"
             value={data.totalInvested}
             money
-            color="text-purple-400"
+            accent="purple"
           />
         )}
 
       </div>
 
       {/* ================= RESUMO FINANCEIRO ================= */}
-      <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+      <div
+        className="
+          bg-[#14171A]
+          border border-[#1E2329]
+          rounded-2xl
+          p-8
+        "
+      >
 
-        <h2 className="text-lg font-semibold mb-4 text-gray-300">
+        <h2 className="text-lg font-semibold text-white mb-6">
           Resumo Financeiro
         </h2>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-8">
 
           <MiniCard
             label="Fluxo Entrada"
             value={data.totalRecharges}
-            color="text-green-400"
+            accent="green"
           />
 
           <MiniCard
             label="Fluxo Saída"
             value={data.totalWithdrawals}
-            color="text-red-400"
+            accent="red"
           />
 
           <MiniCard
             label="Capital Atual"
             value={data.totalBalance}
-            color="text-yellow-400"
+            accent="yellow"
           />
 
         </div>
@@ -127,47 +145,92 @@ export default function AdminDashboard() {
   )
 }
 
-/* ================= COMPONENTES ================= */
+/* ================= KPI CARD ================= */
 
 function KpiCard({
   title,
   value,
   money,
-  color
+  accent
 }: {
   title: string
   value: number
   money?: boolean
-  color?: string
+  accent?: "blue" | "green" | "red" | "yellow" | "purple"
 }) {
+
+  const accentMap: Record<string, string> = {
+    blue: "text-blue-400",
+    green: "text-green-400",
+    red: "text-red-400",
+    yellow: "text-[#FCD535]",
+    purple: "text-purple-400"
+  }
+
   return (
-    <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800 shadow-lg">
-      <p className="text-sm text-gray-400">{title}</p>
-      <h2 className={`text-2xl font-bold mt-3 ${color}`}>
+    <div
+      className="
+        bg-[#14171A]
+        border border-[#1E2329]
+        rounded-2xl
+        p-6
+        hover:bg-[#181C21]
+        hover:scale-[1.02]
+        transition
+      "
+    >
+      <p className="text-gray-400 text-sm">
+        {title}
+      </p>
+
+      <h2 className={`text-3xl font-semibold mt-4 ${accentMap[accent || "blue"]}`}>
         {money ? formatMoney(value) : value}
       </h2>
     </div>
   )
 }
 
+/* ================= MINI CARD ================= */
+
 function MiniCard({
   label,
   value,
-  color
+  accent
 }: {
   label: string
   value: number
-  color?: string
+  accent?: "green" | "red" | "yellow"
 }) {
+
+  const accentMap: Record<string, string> = {
+    green: "text-green-400",
+    red: "text-red-400",
+    yellow: "text-[#FCD535]"
+  }
+
   return (
-    <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-      <p className="text-gray-400 text-sm">{label}</p>
-      <p className={`text-xl font-semibold mt-2 ${color}`}>
+    <div
+      className="
+        bg-[#1A1F24]
+        border border-[#1E2329]
+        rounded-xl
+        p-6
+        hover:bg-[#20252B]
+        transition
+      "
+    >
+      <p className="text-gray-400 text-sm">
+        {label}
+      </p>
+
+      <p className={`text-xl font-semibold mt-3 ${accentMap[accent || "green"]}`}>
         {formatMoney(value)}
       </p>
     </div>
   )
 }
+
+/* ================= FORMAT ================= */
 
 function formatMoney(value: number) {
   return new Intl.NumberFormat("pt-AO", {

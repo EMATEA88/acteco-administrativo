@@ -5,7 +5,9 @@ import {
   CheckCircle,
   Clock,
   FileText,
+  X
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 type Financial = {
   totalGross: number
@@ -34,6 +36,7 @@ type Settlement = {
 }
 
 export default function AdminPartners() {
+
   const [partners, setPartners] = useState<Partner[]>([])
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null)
   const [settlements, setSettlements] = useState<Settlement[]>([])
@@ -43,35 +46,64 @@ export default function AdminPartners() {
   }, [])
 
   async function loadPartners() {
-    const { data } = await api.get('/admin/partners')
-    setPartners(data)
+    try {
+      const { data } = await api.get('/admin/partners')
+      setPartners(data)
+    } catch {
+      toast.error("Erro ao carregar parceiros")
+    }
   }
 
   async function generateSettlement(id: number) {
-    await api.post(`/admin/partners/${id}/generate-settlement`)
-    loadPartners()
+    try {
+      await api.post(`/admin/partners/${id}/generate-settlement`)
+      toast.success("Settlement gerado")
+      loadPartners()
+    } catch {
+      toast.error("Erro ao gerar settlement")
+    }
   }
 
   async function loadSettlements(id: number) {
-    const { data } = await api.get(`/admin/partner-settlements/${id}`)
-    setSettlements(data)
+    try {
+      const { data } = await api.get(`/admin/partner-settlements/${id}`)
+      setSettlements(data)
+    } catch {
+      toast.error("Erro ao carregar settlements")
+    }
   }
 
   async function markPaid(id: number) {
-    await api.patch(`/admin/partners/settlement/${id}/pay`)
-    if (selectedPartner) loadSettlements(selectedPartner.id)
-    loadPartners()
+    try {
+      await api.patch(`/admin/partners/settlement/${id}/pay`)
+      toast.success("Marcado como pago")
+      if (selectedPartner) loadSettlements(selectedPartner.id)
+      loadPartners()
+    } catch {
+      toast.error("Erro ao marcar pagamento")
+    }
   }
 
   function formatMoney(value?: number) {
-    return (value ?? 0).toLocaleString('pt-AO') + ' Kz'
+    return new Intl.NumberFormat("pt-AO", {
+      style: "currency",
+      currency: "AOA"
+    }).format(value ?? 0)
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Partners Finance Control</h1>
+    <div className="p-10 space-y-10">
 
-      <div className="grid gap-6">
+      <div>
+        <h1 className="text-2xl font-semibold text-white">
+          Partners Finance Control
+        </h1>
+        <p className="text-gray-400 text-sm mt-1">
+          Gestão institucional de comissões e settlements
+        </p>
+      </div>
+
+      <div className="space-y-8">
 
         {partners.map((p) => {
 
@@ -86,64 +118,89 @@ export default function AdminPartners() {
           return (
             <div
               key={p.id}
-              className="bg-white rounded-2xl shadow p-6 space-y-4"
+              className="
+                bg-[#14171A]
+                border border-[#1E2329]
+                rounded-2xl
+                p-8
+                hover:bg-[#181C21]
+                transition
+              "
             >
-              <div className="flex justify-between items-center">
+              {/* HEADER */}
+              <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h2 className="text-lg font-semibold">{p.name}</h2>
-                  <p className="text-sm text-gray-500">
+                  <h2 className="text-lg font-semibold text-white">
+                    {p.name}
+                  </h2>
+                  <p className="text-sm text-gray-400">
                     {p.email || p.contact}
                   </p>
                 </div>
 
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    p.isActive
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-600'
-                  }`}
+                  className={`
+                    px-4 py-1 rounded-full text-xs font-medium
+                    ${p.isActive
+                      ? 'bg-green-900/40 text-green-400'
+                      : 'bg-red-900/40 text-red-400'}
+                  `}
                 >
                   {p.isActive ? 'ACTIVE' : 'INACTIVE'}
                 </span>
               </div>
 
-              <div className="grid grid-cols-5 gap-4 text-sm">
+              {/* METRICS */}
+              <div className="grid md:grid-cols-5 gap-6 text-sm">
 
                 <Metric
                   icon={<DollarSign size={16} />}
                   label="Gross"
                   value={formatMoney(financial.totalGross)}
+                  accent="white"
                 />
 
                 <Metric
                   icon={<FileText size={16} />}
-                  label="Commission (5%)"
+                  label="Commission"
                   value={formatMoney(financial.totalCommission)}
+                  accent="blue"
                 />
 
                 <Metric
                   icon={<DollarSign size={16} />}
                   label="Net"
                   value={formatMoney(financial.totalNet)}
+                  accent="yellow"
                 />
 
                 <Metric
                   icon={<CheckCircle size={16} />}
                   label="Paid"
                   value={formatMoney(financial.totalPaid)}
+                  accent="green"
                 />
 
                 <Metric
                   icon={<Clock size={16} />}
                   label="Pending"
                   value={formatMoney(financial.totalPending)}
+                  accent="orange"
                 />
               </div>
 
-              <div className="flex gap-4">
+              {/* ACTIONS */}
+              <div className="flex gap-4 mt-8">
                 <button
                   onClick={() => generateSettlement(p.id)}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+                  className="
+                    px-5 py-2
+                    bg-[#FCD535]
+                    text-black
+                    rounded-lg
+                    hover:scale-105
+                    transition
+                  "
                 >
                   Generate Settlement
                 </button>
@@ -153,68 +210,96 @@ export default function AdminPartners() {
                     setSelectedPartner(p)
                     loadSettlements(p.id)
                   }}
-                  className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-black transition"
+                  className="
+                    px-5 py-2
+                    bg-[#1E2329]
+                    text-white
+                    rounded-lg
+                    hover:bg-[#252B33]
+                    transition
+                  "
                 >
                   View Settlements
                 </button>
               </div>
+
             </div>
           )
         })}
       </div>
 
+      {/* MODAL */}
       {selectedPartner && (
-        <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50">
 
-          <div className="bg-white rounded-2xl w-[800px] p-6 space-y-4">
+          <div className="
+            bg-[#14171A]
+            border border-[#1E2329]
+            rounded-2xl
+            w-[900px]
+            max-h-[80vh]
+            overflow-y-auto
+            p-8
+            space-y-6
+          ">
 
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-lg font-semibold text-white">
                 Settlements — {selectedPartner.name}
               </h2>
 
               <button
                 onClick={() => setSelectedPartner(null)}
-                className="text-sm text-gray-500"
+                className="text-gray-400 hover:text-white transition"
               >
-                Close
+                <X size={20} />
               </button>
             </div>
 
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left border-b">
-                  <th>ID</th>
-                  <th>Gross</th>
-                  <th>Commission</th>
-                  <th>Net</th>
-                  <th>Status</th>
-                  <th>Ação</th>
+            <table className="w-full text-sm text-gray-300">
+              <thead className="bg-[#1A1F24] text-gray-400">
+                <tr>
+                  <th className="p-3 text-left">ID</th>
+                  <th className="p-3 text-left">Gross</th>
+                  <th className="p-3 text-left">Commission</th>
+                  <th className="p-3 text-left">Net</th>
+                  <th className="p-3 text-left">Status</th>
+                  <th className="p-3 text-left">Ação</th>
                 </tr>
               </thead>
+
               <tbody>
                 {settlements.map((s) => (
-                  <tr key={s.id} className="border-b">
-                    <td>{s.id}</td>
-                    <td>{formatMoney(s.gross)}</td>
-                    <td>{formatMoney(s.commission)}</td>
-                    <td>{formatMoney(s.net)}</td>
-                    <td>
+                  <tr key={s.id} className="border-t border-[#1E2329]">
+                    <td className="p-3">{s.id}</td>
+                    <td className="p-3">{formatMoney(s.gross)}</td>
+                    <td className="p-3">{formatMoney(s.commission)}</td>
+                    <td className="p-3">{formatMoney(s.net)}</td>
+                    <td className="p-3">
                       <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          s.status === 'PAID'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-yellow-100 text-yellow-700'
-                        }`}
+                        className={`
+                          px-3 py-1 rounded-full text-xs font-medium
+                          ${s.status === 'PAID'
+                            ? 'bg-green-900/40 text-green-400'
+                            : 'bg-yellow-900/40 text-yellow-400'}
+                        `}
                       >
                         {s.status}
                       </span>
                     </td>
-                    <td>
+                    <td className="p-3">
                       {s.status === 'PENDING' && (
                         <button
                           onClick={() => markPaid(s.id)}
-                          className="px-3 py-1 bg-emerald-600 text-white rounded-md text-xs"
+                          className="
+                            px-4 py-1
+                            bg-[#FCD535]
+                            text-black
+                            rounded-md
+                            text-xs
+                            hover:scale-105
+                            transition
+                          "
                         >
                           Mark Paid
                         </button>
@@ -228,6 +313,7 @@ export default function AdminPartners() {
           </div>
         </div>
       )}
+
     </div>
   )
 }
@@ -236,18 +322,39 @@ function Metric({
   icon,
   label,
   value,
+  accent,
 }: {
   icon: any
   label: string
   value: string
+  accent: string
 }) {
+
+  const colorMap: Record<string, string> = {
+    white: "text-white",
+    blue: "text-blue-400",
+    yellow: "text-[#FCD535]",
+    green: "text-green-400",
+    orange: "text-orange-400"
+  }
+
   return (
-    <div className="bg-gray-50 rounded-xl p-3 space-y-1">
-      <div className="flex items-center gap-2 text-gray-500 text-xs">
+    <div className="
+      bg-[#1A1F24]
+      border border-[#1E2329]
+      rounded-xl
+      p-4
+      space-y-2
+      hover:bg-[#20252B]
+      transition
+    ">
+      <div className="flex items-center gap-2 text-gray-400 text-xs">
         {icon}
         {label}
       </div>
-      <div className="font-semibold">{value}</div>
+      <div className={`font-semibold ${colorMap[accent]}`}>
+        {value}
+      </div>
     </div>
   )
 }

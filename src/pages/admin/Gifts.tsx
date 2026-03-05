@@ -13,11 +13,7 @@ export default function AdminGift() {
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
 
-  /* =========================
-      GENERATE
-  ========================= */
-
-  const generate = async () => {
+  async function generate() {
     if (amount <= 0 || days <= 0 || quantity <= 0) {
       toast.error("Valores inválidos")
       return
@@ -53,45 +49,39 @@ export default function AdminGift() {
     }
   }
 
-  /* =========================
-      COPY
-  ========================= */
-
-  const copyOne = async (code: string) => {
+  async function copyOne(code: string) {
     await navigator.clipboard.writeText(code)
     setCopied(code)
     setTimeout(() => setCopied(null), 2000)
   }
 
-  const copyAll = async () => {
+  async function copyAll() {
     await navigator.clipboard.writeText(codes.join("\n"))
     setCopied("ALL")
     setTimeout(() => setCopied(null), 2000)
   }
 
-  /* =========================
-      UI
-  ========================= */
-
   return (
-    <div className="p-8 max-w-2xl mx-auto">
+    <div className="p-10 max-w-3xl mx-auto space-y-10">
 
-      <div className="flex items-center gap-4 mb-8">
-        <div className="bg-indigo-100 p-3 rounded-xl">
-          <Gift className="text-indigo-600" size={26} />
+      {/* HEADER */}
+      <div className="flex items-center gap-5">
+        <div className="bg-[#1A1F24] p-4 rounded-2xl border border-[#1E2329]">
+          <Gift className="text-[#FCD535]" size={26} />
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-2xl font-semibold text-white">
             Gestão de Gift Codes
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-400 text-sm">
             Criação controlada de códigos promocionais
           </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-md p-8 space-y-6">
+      {/* FORM CARD */}
+      <div className="bg-[#14171A] border border-[#1E2329] rounded-2xl p-8 space-y-6 transition hover:bg-[#181C21]">
 
         <Input
           label="Valor (AOA)"
@@ -115,26 +105,35 @@ export default function AdminGift() {
           onClick={generate}
           disabled={loading}
           className="
-            w-full h-12 rounded-xl font-semibold text-white
-            bg-indigo-600 hover:bg-indigo-700
-            transition disabled:opacity-50
+            w-full h-12 rounded-xl font-semibold
+            bg-[#FCD535] text-black
+            hover:scale-[1.02]
+            hover:brightness-95
+            transition-all duration-200
+            disabled:opacity-50
           "
         >
           {loading ? "Gerando..." : "Gerar Códigos"}
         </button>
       </div>
 
+      {/* RESULT CARD */}
       {codes.length > 0 && (
-        <div className="mt-8 bg-white p-6 rounded-2xl shadow">
+        <div className="bg-[#14171A] border border-[#1E2329] rounded-2xl p-8 transition hover:bg-[#181C21]">
 
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-gray-700">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-semibold text-white">
               Códigos Gerados
             </h3>
 
             <button
               onClick={copyAll}
-              className="flex items-center gap-2 text-sm text-indigo-600"
+              className="
+                flex items-center gap-2 text-sm
+                text-[#FCD535]
+                hover:scale-105
+                transition
+              "
             >
               {copied === "ALL"
                 ? <Check size={16} />
@@ -144,19 +143,32 @@ export default function AdminGift() {
             </button>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {codes.map(code => (
               <div
                 key={code}
-                className="flex justify-between items-center bg-gray-50 px-4 py-3 rounded-lg"
+                className="
+                  flex justify-between items-center
+                  bg-[#1A1F24]
+                  border border-[#1E2329]
+                  px-5 py-4
+                  rounded-xl
+                  hover:bg-[#20252B]
+                  transition
+                "
               >
-                <span className="font-mono text-sm tracking-wide">
+                <span className="font-mono text-sm tracking-wider text-gray-200">
                   {code}
                 </span>
 
                 <button
                   onClick={() => copyOne(code)}
-                  className="text-gray-500 hover:text-indigo-600"
+                  className="
+                    text-gray-400
+                    hover:text-[#FCD535]
+                    hover:scale-110
+                    transition
+                  "
                 >
                   {copied === code
                     ? <Check size={18} />
@@ -174,7 +186,7 @@ export default function AdminGift() {
 }
 
 /* =========================
-    INPUT COMPONENT
+    INPUT COMPONENT DARK
 ========================= */
 
 function Input({
@@ -188,7 +200,7 @@ function Input({
 }) {
   return (
     <div>
-      <label className="text-sm text-gray-500">
+      <label className="text-sm text-gray-400">
         {label}
       </label>
 
@@ -196,8 +208,15 @@ function Input({
         type="text"
         inputMode="numeric"
         className="
-          mt-1 w-full border rounded-xl px-4 h-11
-          focus:ring-2 focus:ring-indigo-400
+          mt-2 w-full
+          bg-[#1A1F24]
+          border border-[#1E2329]
+          rounded-xl px-4 h-11
+          text-white
+          placeholder-gray-500
+          focus:outline-none
+          focus:border-[#2A2F36]
+          transition
         "
         value={value}
         onChange={e =>

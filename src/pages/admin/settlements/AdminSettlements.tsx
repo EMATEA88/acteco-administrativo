@@ -35,10 +35,11 @@ export default function AdminSettlements() {
   const [loading, setLoading] = useState(false)
 
   const formatMoney = (value: number) =>
-    new Intl.NumberFormat("pt-PT", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value)
+    new Intl.NumberFormat("pt-AO", {
+      style: "currency",
+      currency: "AOA",
+      minimumFractionDigits: 2
+    }).format(value ?? 0)
 
   async function fetchData() {
     try {
@@ -46,7 +47,7 @@ export default function AdminSettlements() {
       const res = await AdminService.getSettlements({
         status: statusFilter || undefined
       })
-      setData(res.data || [])
+      setData(res.data ?? [])
     } finally {
       setLoading(false)
     }
@@ -70,43 +71,45 @@ export default function AdminSettlements() {
   }, [statusFilter])
 
   return (
-    <div className="p-6 space-y-6 text-white">
+    <div className="p-10 space-y-10">
 
-      <h1 className="text-3xl font-bold tracking-tight">
-        Partner Settlements
-      </h1>
+      {/* HEADER */}
+      <div>
+        <h1 className="text-2xl font-semibold text-white">
+          Partner Settlements
+        </h1>
+        <p className="text-gray-400 text-sm mt-1">
+          Controle institucional de pagamentos a parceiros
+        </p>
+      </div>
 
       {/* ================= STATS ================= */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
 
-          <div className="bg-gray-900 border border-gray-800 p-5 rounded-2xl shadow-lg">
-            <p className="text-gray-400 text-sm">Pendentes</p>
-            <p className="text-3xl font-bold text-yellow-400 mt-1">
-              {stats.pendingCount}
-            </p>
-          </div>
+          <StatCard
+            title="Pendentes"
+            value={stats.pendingCount}
+            color="text-yellow-400"
+          />
 
-          <div className="bg-gray-900 border border-gray-800 p-5 rounded-2xl shadow-lg">
-            <p className="text-gray-400 text-sm">Total Pendentes</p>
-            <p className="text-3xl font-bold text-yellow-400 mt-1">
-              {formatMoney(stats.totalPendingAmount ?? 0)} AOA
-            </p>
-          </div>
+          <StatCard
+            title="Total Pendentes"
+            value={formatMoney(stats.totalPendingAmount)}
+            color="text-yellow-400"
+          />
 
-          <div className="bg-gray-900 border border-gray-800 p-5 rounded-2xl shadow-lg">
-            <p className="text-gray-400 text-sm">Pagos</p>
-            <p className="text-3xl font-bold text-green-400 mt-1">
-              {stats.paidCount}
-            </p>
-          </div>
+          <StatCard
+            title="Pagos"
+            value={stats.paidCount}
+            color="text-green-400"
+          />
 
-          <div className="bg-gray-900 border border-gray-800 p-5 rounded-2xl shadow-lg">
-            <p className="text-gray-400 text-sm">Total Pago</p>
-            <p className="text-3xl font-bold text-green-400 mt-1">
-              {formatMoney(stats.totalPaidAmount ?? 0)} AOA
-            </p>
-          </div>
+          <StatCard
+            title="Total Pago"
+            value={formatMoney(stats.totalPaidAmount)}
+            color="text-green-400"
+          />
 
         </div>
       )}
@@ -114,7 +117,14 @@ export default function AdminSettlements() {
       {/* ================= FILTER ================= */}
       <div>
         <select
-          className="bg-gray-900 border border-gray-700 text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="
+            bg-[#14171A]
+            border border-[#1E2329]
+            text-white
+            px-4 py-2
+            rounded-lg
+            focus:outline-none
+          "
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
@@ -125,20 +135,25 @@ export default function AdminSettlements() {
       </div>
 
       {/* ================= TABLE ================= */}
-      <div className="bg-gray-950 border border-gray-800 rounded-2xl overflow-x-auto shadow-xl">
+      <div className="
+        bg-[#14171A]
+        border border-[#1E2329]
+        rounded-2xl
+        overflow-x-auto
+      ">
 
         <table className="w-full text-sm text-white">
 
-          <thead className="bg-gray-900 text-gray-300 uppercase text-xs tracking-wider">
+          <thead className="border-b border-[#1E2329] text-gray-400 text-xs uppercase tracking-wider">
             <tr>
-              <th className="p-4 text-left">ID</th>
-              <th className="p-4 text-left">Partner</th>
-              <th className="p-4 text-left">Service</th>
-              <th className="p-4 text-left">Gross</th>
-              <th className="p-4 text-left text-red-400">Commission</th>
-              <th className="p-4 text-left text-green-400">Net</th>
-              <th className="p-4 text-left">Status</th>
-              <th className="p-4 text-left">Ações</th>
+              <th className="p-5 text-left">ID</th>
+              <th className="p-5 text-left">Partner</th>
+              <th className="p-5 text-left">Service</th>
+              <th className="p-5 text-left">Gross</th>
+              <th className="p-5 text-left">Commission</th>
+              <th className="p-5 text-left">Net</th>
+              <th className="p-5 text-left">Status</th>
+              <th className="p-5 text-left">Ação</th>
             </tr>
           </thead>
 
@@ -147,50 +162,63 @@ export default function AdminSettlements() {
             {data.map((s) => (
               <tr
                 key={s.id}
-                className="border-b border-gray-800 hover:bg-gray-800/40 transition duration-150"
+                className="
+                  border-b border-[#1E2329]
+                  hover:bg-[#181C21]
+                  transition
+                "
               >
-                <td className="p-4 font-semibold">{s.id}</td>
-                <td className="p-4 font-medium text-white">
-                  {s.partner.name}
+                <td className="p-5 font-semibold">{s.id}</td>
+
+                <td className="p-5">
+                  <div className="font-medium">
+                    {s.partner.name}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {s.partner.email}
+                  </div>
                 </td>
-                <td className="p-4 text-gray-300">
+
+                <td className="p-5 text-gray-300">
                   {s.service.name}
                 </td>
 
-                <td className="p-4 text-gray-200">
-                  {formatMoney(s.grossAmount)} AOA
+                <td className="p-5 text-gray-200">
+                  {formatMoney(s.grossAmount)}
                 </td>
 
-                <td className="p-4 text-red-400 font-semibold">
-                  {formatMoney(s.commission)} AOA
+                <td className="p-5 text-red-400 font-semibold">
+                  {formatMoney(s.commission)}
                 </td>
 
-                <td className="p-4 text-green-400 font-semibold">
-                  {formatMoney(s.netAmount)} AOA
+                <td className="p-5 text-green-400 font-semibold">
+                  {formatMoney(s.netAmount)}
                 </td>
 
-                <td className="p-4">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      s.status === "PENDING"
-                        ? "bg-yellow-600 text-white"
-                        : "bg-green-600 text-white"
-                    }`}
-                  >
-                    {s.status}
-                  </span>
+                <td className="p-5">
+                  <StatusBadge status={s.status} />
                 </td>
 
-                <td className="p-4">
+                <td className="p-5">
                   {s.status === "PENDING" && (
                     <button
                       onClick={() => handlePay(s.id)}
-                      className="bg-blue-600 px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-700 transition"
+                      className="
+                        bg-[#FCD535]
+                        text-black
+                        px-4 py-1.5
+                        rounded-lg
+                        text-xs
+                        font-semibold
+                        hover:scale-105
+                        transition
+                      "
                     >
                       Pagar
                     </button>
                   )}
                 </td>
+
               </tr>
             ))}
 
@@ -206,5 +234,59 @@ export default function AdminSettlements() {
       </div>
 
     </div>
+  )
+}
+
+/* ================= COMPONENTS ================= */
+
+function StatCard({
+  title,
+  value,
+  color
+}: {
+  title: string
+  value: any
+  color: string
+}) {
+  return (
+    <div className="
+      bg-[#14171A]
+      border border-[#1E2329]
+      rounded-2xl
+      p-6
+      hover:bg-[#181C21]
+      transition
+    ">
+      <p className="text-gray-400 text-sm">
+        {title}
+      </p>
+      <p className={`text-2xl font-semibold mt-3 ${color}`}>
+        {value}
+      </p>
+    </div>
+  )
+}
+
+function StatusBadge({
+  status
+}: {
+  status: "PENDING" | "PAID"
+}) {
+
+  const map: Record<string, string> = {
+    PENDING: "bg-yellow-900/40 text-yellow-400",
+    PAID: "bg-green-900/40 text-green-400"
+  }
+
+  return (
+    <span className={`
+      px-3 py-1
+      rounded-full
+      text-xs
+      font-medium
+      ${map[status]}
+    `}>
+      {status}
+    </span>
   )
 }

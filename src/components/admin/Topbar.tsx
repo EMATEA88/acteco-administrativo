@@ -10,8 +10,6 @@ export default function Topbar() {
   const navigate = useNavigate()
   const [unread, setUnread] = useState(0)
 
-  /* ================= LOAD COUNT ================= */
-
   async function loadUnread() {
     try {
       const res = await AdminNotificationsService.unreadCount()
@@ -20,8 +18,6 @@ export default function Topbar() {
       setUnread(0)
     }
   }
-
-  /* ================= SOCKET ================= */
 
   useEffect(() => {
 
@@ -44,30 +40,41 @@ export default function Topbar() {
   }, [])
 
   return (
-    <header className="h-16 bg-white border-b flex items-center justify-between px-6">
+    <header className="h-16 bg-[#0B0E11] border-b border-[#1E2329] flex items-center justify-between px-8">
 
-      <input
-        placeholder="Pesquisar..."
-        className="border rounded px-3 py-1 text-sm w-64"
-      />
+      {/* SEARCH */}
+      <div>
+        <input
+          placeholder="Pesquisar..."
+          className="w-72 bg-[#14171A] border border-[#1E2329] rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#2A2F36] transition"
+        />
+      </div>
 
-      <div className="flex items-center gap-6">
+      {/* RIGHT SIDE */}
+      <div className="flex items-center gap-8">
 
+        {/* NOTIFICATIONS */}
         <div
           onClick={() => navigate("/admin/notifications")}
-          className="relative cursor-pointer hover:scale-105 transition"
+          className="relative cursor-pointer group"
         >
-          <Bell className="text-gray-600" />
+          <Bell className="text-gray-400 group-hover:text-white transition" size={20} />
 
           {unread > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+            <span className="absolute -top-2 -right-2 bg-[#F6465D] text-white text-[10px] font-semibold px-2 py-[2px] rounded-full shadow">
               {unread}
             </span>
           )}
         </div>
 
-        <div className="text-sm font-medium">
-          Admin
+        {/* USER */}
+        <div className="flex items-center gap-3 cursor-default">
+          <div className="w-8 h-8 rounded-full bg-[#1A1F24] flex items-center justify-center text-xs font-semibold">
+            A
+          </div>
+          <span className="text-sm text-gray-300">
+            Admin
+          </span>
         </div>
 
       </div>

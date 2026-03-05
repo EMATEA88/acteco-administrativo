@@ -46,8 +46,6 @@ export default function Withdrawals() {
     }
   }
 
-  // ================= ACTIONS =================
-
   async function approve(id: number) {
     try {
       setProcessingId(id)
@@ -74,8 +72,6 @@ export default function Withdrawals() {
     }
   }
 
-  // ================= SEARCH =================
-
   const filtered = items.filter((i) => {
     if (!search) return true
 
@@ -87,8 +83,6 @@ export default function Withdrawals() {
       String(i.iban || "").toLowerCase().includes(s)
     )
   })
-
-  // ================= EXPORT PDF =================
 
   async function exportPDF() {
     try {
@@ -127,7 +121,6 @@ export default function Withdrawals() {
       })
 
       doc.save("withdrawals-pendentes.pdf")
-
       toast.success("PDF exportado com sucesso")
 
     } catch {
@@ -136,106 +129,191 @@ export default function Withdrawals() {
   }
 
   if (loading) {
-    return <div className="p-6">Carregando saques...</div>
+    return (
+      <div className="p-8 text-gray-400">
+        Carregando saques...
+      </div>
+    )
   }
 
   return (
-    <div className="p-6">
+    <div className="p-8 space-y-8 text-white">
 
-      <div className="flex justify-between mb-6">
-        <input
-          placeholder="Pesquisar por ID, Telefone ou IBAN"
-          className="border px-3 py-2 rounded w-80"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* HEADER */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Saques
+        </h1>
 
         <button
           onClick={exportPDF}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+          className="
+            bg-emerald-600
+            hover:bg-emerald-700
+            text-white
+            px-5 py-2
+            rounded-xl
+            text-sm
+            font-semibold
+            transition
+          "
         >
           Exportar PDF
         </button>
       </div>
 
-      <DataTable
-        data={filtered}
-        columns={[
-          { key: "id", label: "ID" },
-          { key: "userPhone", label: "Utilizador" },
-          { key: "iban", label: "IBAN" },
+      {/* SEARCH */}
+      <div>
+        <input
+          placeholder="Pesquisar por ID, Telefone ou IBAN"
+          className="
+            bg-gray-900
+            border border-gray-800
+            px-4 py-2
+            rounded-xl
+            w-96
+            text-sm
+            focus:outline-none
+            focus:ring-2
+            focus:ring-emerald-500
+            transition
+          "
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
-          {
-            key: "amount",
-            label: "Valor",
-            render: (r: Withdrawal) => formatMoney(r.amount),
-          },
+      {/* TABLE CARD */}
+      <div className="
+        bg-gray-950
+        border border-gray-800
+        rounded-2xl
+        shadow-xl
+        overflow-hidden
+      ">
+        <DataTable
+          data={filtered}
+          columns={[
+            {
+              key: "id",
+              label: "ID",
+              render: (r: Withdrawal) => (
+                <span className="text-gray-400 text-xs">
+                  #{r.id}
+                </span>
+              )
+            },
 
-          {
-            key: "fee",
-            label: "Taxa",
-            render: (r: Withdrawal) => formatMoney(r.fee),
-          },
+            {
+              key: "userPhone",
+              label: "Utilizador",
+              render: (r: Withdrawal) =>
+                <span className="font-semibold">
+                  {r.userPhone}
+                </span>
+            },
 
-          {
-            key: "liquid",
-            label: "Líquido",
-            render: (r: Withdrawal) =>
-              formatMoney(
-                r.liquid !== undefined
-                  ? r.liquid
-                  : r.amount - r.fee
-              ),
-          },
+            { key: "iban", label: "IBAN" },
 
-          {
-            key: "status",
-            label: "Estado",
-            render: (r: Withdrawal) => (
-              <StatusBadge status={r.status} />
-            ),
-          },
+            {
+              key: "amount",
+              label: "Valor",
+              render: (r: Withdrawal) =>
+                <span className="text-yellow-400 font-semibold">
+                  {formatMoney(r.amount)}
+                </span>
+            },
 
-          {
-            key: "actions",
-            label: "Ações",
-            render: (r: Withdrawal) =>
-              r.status === "PENDING" && (
-                <div className="flex gap-2">
-                  <button
-                    disabled={processingId === r.id}
-                    className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-3 py-1 rounded"
-                    onClick={() => approve(r.id)}
-                  >
-                    Aprovar
-                  </button>
+            {
+              key: "fee",
+              label: "Taxa",
+              render: (r: Withdrawal) =>
+                <span className="text-red-400 text-sm">
+                  {formatMoney(r.fee)}
+                </span>
+            },
 
-                  <button
-                    disabled={processingId === r.id}
-                    className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-3 py-1 rounded"
-                    onClick={() => reject(r.id)}
-                  >
-                    Rejeitar
-                  </button>
-                </div>
-              ),
-          },
-        ]}
-      />
+            {
+              key: "liquid",
+              label: "Líquido",
+              render: (r: Withdrawal) =>
+                <span className="text-emerald-400 font-semibold">
+                  {formatMoney(
+                    r.liquid !== undefined
+                      ? r.liquid
+                      : r.amount - r.fee
+                  )}
+                </span>
+            },
+
+            {
+              key: "status",
+              label: "Estado",
+              render: (r: Withdrawal) =>
+                <StatusBadge status={r.status} />
+            },
+
+            {
+              key: "actions",
+              label: "Ações",
+              render: (r: Withdrawal) =>
+                r.status === "PENDING" && (
+                  <div className="flex gap-2">
+                    <button
+                      disabled={processingId === r.id}
+                      className="
+                        bg-emerald-600
+                        hover:bg-emerald-700
+                        disabled:opacity-50
+                        text-white
+                        px-3 py-1
+                        rounded-lg
+                        text-xs
+                        transition
+                      "
+                      onClick={() => approve(r.id)}
+                    >
+                      Aprovar
+                    </button>
+
+                    <button
+                      disabled={processingId === r.id}
+                      className="
+                        bg-red-600
+                        hover:bg-red-700
+                        disabled:opacity-50
+                        text-white
+                        px-3 py-1
+                        rounded-lg
+                        text-xs
+                        transition
+                      "
+                      onClick={() => reject(r.id)}
+                    >
+                      Rejeitar
+                    </button>
+                  </div>
+                )
+            },
+          ]}
+        />
+      </div>
     </div>
   )
 }
 
+/* ================= STATUS BADGE ================= */
+
 function StatusBadge({ status }: { status: string }) {
 
   const styles: Record<string, string> = {
-    PENDING: "bg-yellow-100 text-yellow-700",
-    APPROVED: "bg-green-100 text-green-700",
-    REJECTED: "bg-red-100 text-red-700",
+    PENDING: "bg-yellow-600/20 text-yellow-400",
+    APPROVED: "bg-emerald-600/20 text-emerald-400",
+    REJECTED: "bg-red-600/20 text-red-400",
   }
 
   return (
-    <span className={`px-2 py-1 rounded text-xs font-semibold ${styles[status] || "bg-gray-100 text-gray-600"}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[status] || "bg-gray-600/20 text-gray-400"}`}>
       {status}
     </span>
   )
@@ -245,5 +323,5 @@ function formatMoney(value: number) {
   return new Intl.NumberFormat("pt-AO", {
     style: "currency",
     currency: "AOA",
-  }).format(value)
+  }).format(value ?? 0)
 }

@@ -38,71 +38,120 @@ export default function AdminFinance() {
     }
   }
 
-  if (loading) {
-    return <div className="p-6">Carregando...</div>
-  }
+  if (loading)
+    return (
+      <div className="p-10 text-gray-400">
+        Carregando módulo financeiro...
+      </div>
+    )
 
-  if (!data) {
-    return <div className="p-6 text-red-500">Erro ao carregar dados</div>
-  }
+  if (!data)
+    return (
+      <div className="p-10 text-red-500">
+        Erro ao carregar dados financeiros
+      </div>
+    )
 
   const chartData = [
-    {
-      name: "Recharges",
-      value: data.totalRecharges
-    },
-    {
-      name: "Withdrawals",
-      value: data.totalWithdrawals
-    }
+    { name: "Recharges", value: data.totalRecharges ?? 0 },
+    { name: "Withdrawals", value: data.totalWithdrawals ?? 0 }
   ]
 
-  const netFlow = data.totalRecharges - data.totalWithdrawals
+  const netFlow =
+    (data.totalRecharges ?? 0) -
+    (data.totalWithdrawals ?? 0)
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-10 space-y-10">
 
-      <h1 className="text-2xl font-bold">
-        Finance Overview
-      </h1>
+      {/* HEADER */}
+      <div>
+        <h1 className="text-2xl font-semibold text-white">
+          Financial Control Center
+        </h1>
+        <p className="text-gray-400 text-sm mt-1">
+          Monitoramento institucional de fluxo financeiro
+        </p>
+      </div>
 
-      {/* ===== CARDS ===== */}
+      {/* KPI CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
 
         <Card title="Users" value={data.totalUsers} />
 
-        <Card title="Balance Total" value={formatMoney(data.totalBalance)} />
+        <Card
+          title="Total Balance"
+          value={formatMoney(data.totalBalance)}
+        />
 
-        <Card title="Recharges" value={formatMoney(data.totalRecharges)} />
+        <Card
+          title="Recharges"
+          value={formatMoney(data.totalRecharges)}
+          color="text-green-400"
+        />
 
-        <Card title="Withdrawals" value={formatMoney(data.totalWithdrawals)} />
+        <Card
+          title="Withdrawals"
+          value={formatMoney(data.totalWithdrawals)}
+          color="text-red-400"
+        />
 
         <Card
           title="Net Flow"
           value={formatMoney(netFlow)}
-          highlight={netFlow >= 0}
+          highlight
+          positive={netFlow >= 0}
         />
 
       </div>
 
-      {/* ===== CHART ===== */}
-      <div className="bg-white rounded-xl shadow p-6">
+      {/* CHART */}
+      <div className="
+        bg-[#14171A]
+        border border-[#1E2329]
+        rounded-2xl
+        p-8
+      ">
 
-        <h2 className="font-semibold mb-4">
+        <h2 className="text-white font-semibold mb-6">
           Financial Movement
         </h2>
 
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={320}>
           <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
+
+            <CartesianGrid
+              stroke="#1E2329"
+              vertical={false}
+            />
+
+            <XAxis
+              dataKey="name"
+              stroke="#6B7280"
+            />
+
+            <YAxis
+              stroke="#6B7280"
+            />
+
             <Tooltip
+              contentStyle={{
+                backgroundColor: "#1A1F24",
+                border: "1px solid #2B3139",
+                borderRadius: "12px",
+                color: "#fff"
+              }}
               formatter={(value: any) =>
                 formatMoney(Number(value ?? 0))
               }
             />
-            <Bar dataKey="value" />
+
+            <Bar
+              dataKey="value"
+              radius={[6, 6, 0, 0]}
+              fill="#FCD535"
+            />
+
           </BarChart>
         </ResponsiveContainer>
 
@@ -112,36 +161,61 @@ export default function AdminFinance() {
   )
 }
 
+/* ================= CARD ================= */
+
 function Card({
   title,
   value,
-  highlight
+  color,
+  highlight,
+  positive
 }: {
   title: string
   value: any
+  color?: string
   highlight?: boolean
+  positive?: boolean
 }) {
+
+  const border =
+    highlight
+      ? positive
+        ? "border-green-500"
+        : "border-red-500"
+      : "border-[#1E2329]"
+
   return (
-    <div
-      className={`bg-white shadow rounded-xl p-5 ${
-        highlight !== undefined
-          ? highlight
-            ? "border-l-4 border-green-500"
-            : "border-l-4 border-red-500"
-          : ""
-      }`}
-    >
-      <p className="text-sm text-gray-500">{title}</p>
-      <h2 className="text-2xl font-bold mt-2">
+    <div className={`
+      bg-[#14171A]
+      border
+      ${border}
+      rounded-2xl
+      p-6
+      hover:bg-[#181C21]
+      transition
+    `}>
+      <p className="text-gray-400 text-sm">
+        {title}
+      </p>
+
+      <h2 className={`
+        text-2xl
+        font-semibold
+        mt-3
+        ${color ?? "text-white"}
+      `}>
         {value}
       </h2>
     </div>
   )
 }
 
+/* ================= FORMAT ================= */
+
 function formatMoney(value: number) {
   return new Intl.NumberFormat("pt-AO", {
     style: "currency",
-    currency: "AOA"
-  }).format(value)
+    currency: "AOA",
+    minimumFractionDigits: 2
+  }).format(Number(value ?? 0))
 }

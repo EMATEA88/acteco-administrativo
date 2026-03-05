@@ -1,196 +1,216 @@
 import { useEffect, useState } from "react"
 import { AdminRevenueService } from "../../../services/admin.revenue.service"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid
+} from "recharts"
 
-interface Revenue {
-  id: number
-  type: string
-  amount: number
-  reference?: string
-  createdAt: string
+type RevenueStats = {
+  totalRevenue: number
+  totalCommission: number
+  netRevenue: number
+}
+
+type MonthlyItem = {
+  month: string
+  revenue: number
 }
 
 export default function AdminRevenue() {
 
-  const [data, setData] = useState<Revenue[]>([])
-  const [stats, setStats] = useState<any>(null)
-  const [monthly, setMonthly] = useState<any[]>([])
-  const [typeFilter, setTypeFilter] = useState("")
-  const [loading, setLoading] = useState(false)
-
-  async function fetchData() {
-    setLoading(true)
-
-    const res =
-      await AdminRevenueService.list({
-        type: typeFilter || undefined
-      })
-
-    setData(res.data || [])
-    setLoading(false)
-  }
-
-  async function fetchStats() {
-    const res =
-      await AdminRevenueService.stats()
-
-    setStats(res)
-  }
-
-  async function fetchMonthly() {
-    const year = new Date().getFullYear()
-
-    const res =
-      await AdminRevenueService.monthly(year)
-
-    setMonthly(res)
-  }
+  const [stats, setStats] = useState<RevenueStats | null>(null)
+  const [monthly, setMonthly] = useState<MonthlyItem[]>([])
+  const [year, setYear] = useState(new Date().getFullYear())
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchData()
-    fetchStats()
-    fetchMonthly()
-  }, [typeFilter])
+    load()
+  }, [year])
+
+  async function load() {
+    try {
+      setLoading(true)
+
+      const [statsRes, monthlyRes] =
+        await Promise.all([
+          AdminRevenueService.stats(),
+          AdminRevenueService.monthly(year)
+        ])
+
+      setStats(statsRes)
+      setMonthly(monthlyRes ?? [])
+
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading)
+    return (
+      <div className="p-10 text-gray-400">
+        Carregando módulo Revenue...
+      </div>
+    )
+
+  if (!stats)
+    return (
+      <div className="p-10 text-red-500">
+        Erro ao carregar dados
+      </div>
+    )
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-10 space-y-10">
 
-      <h1 className="text-2xl font-bold">
-        Revenue Control
-      </h1>
-
-      {/* STATS */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-          <div className="bg-gray-800 p-5 rounded-xl border border-gray-700">
-            <p className="text-gray-400 text-sm">
-              Total Geral
-            </p>
-            <p className="text-3xl font-bold text-green-400">
-              {(stats.total ?? 0).toFixed(2)} AOA
-            </p>
-          </div>
-
-          <div className="bg-gray-800 p-5 rounded-xl border border-gray-700">
-            <p className="text-gray-400 text-sm">
-              Tipos de Receita
-            </p>
-            <p className="text-xl font-bold text-blue-400">
-              {stats.byType?.length ?? 0}
-            </p>
-          </div>
-
-          <div className="bg-gray-800 p-5 rounded-xl border border-gray-700">
-            <p className="text-gray-400 text-sm">
-              Registros
-            </p>
-            <p className="text-xl font-bold text-yellow-400">
-              {data.length}
-            </p>
-          </div>
-
+      {/* HEADER */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-semibold text-white">
+            Revenue Control Center
+          </h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Gestão institucional de receitas
+          </p>
         </div>
-      )}
 
-      {/* FILTER */}
-      <div>
         <select
-          value={typeFilter}
-          onChange={(e) =>
-            setTypeFilter(e.target.value)
-          }
-          className="bg-gray-800 p-2 rounded border border-gray-700"
+          value={year}
+          onChange={(e) => setYear(Number(e.target.value))}
+          className="
+            bg-[#14171A]
+            border border-[#1E2329]
+            text-white
+            rounded-lg
+            px-4 py-2
+          "
         >
-          <option value="">Todos</option>
-          <option value="SERVICE_COMMISSION">
-            SERVICE_COMMISSION
-          </option>
-          <option value="INVESTMENT_PROFIT">
-            INVESTMENT_PROFIT
-          </option>
+          {[2023, 2024, 2025].map(y => (
+            <option key={y} value={y}>{y}</option>
+          ))}
         </select>
       </div>
 
-      {/* TABLE */}
-      <div className="bg-gray-900 rounded-xl overflow-x-auto">
+      {/* KPI CARDS */}
+      <div className="grid md:grid-cols-3 gap-6">
 
-        <table className="w-full text-sm">
+        <KpiCard
+          title="Total Revenue"
+          value={formatMoney(stats.totalRevenue)}
+          color="text-green-400"
+        />
 
-          <thead className="bg-gray-800">
-            <tr>
-              <th className="p-3 text-left">ID</th>
-              <th className="p-3 text-left">Tipo</th>
-              <th className="p-3 text-left">Valor</th>
-              <th className="p-3 text-left">Referência</th>
-              <th className="p-3 text-left">Data</th>
-            </tr>
-          </thead>
+        <KpiCard
+          title="Total Commission"
+          value={formatMoney(stats.totalCommission)}
+          color="text-yellow-400"
+        />
 
-          <tbody>
-            {data.map((r) => (
-              <tr
-                key={r.id}
-                className="border-b border-gray-800"
-              >
-                <td className="p-3">{r.id}</td>
-
-                <td className="p-3">
-                  <span className="px-2 py-1 rounded bg-blue-600 text-xs">
-                    {r.type}
-                  </span>
-                </td>
-
-                <td className="p-3 text-green-400 font-semibold">
-                  {r.amount.toFixed(2)} AOA
-                </td>
-
-                <td className="p-3">
-                  {r.reference || "-"}
-                </td>
-
-                <td className="p-3 text-gray-400">
-                  {new Date(
-                    r.createdAt
-                  ).toLocaleString()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {loading && (
-          <div className="p-4 text-center text-gray-400">
-            Carregando...
-          </div>
-        )}
+        <KpiCard
+          title="Net Revenue"
+          value={formatMoney(stats.netRevenue)}
+          color="text-blue-400"
+        />
 
       </div>
 
-      {/* MONTHLY SUMMARY */}
-      <div className="bg-gray-900 p-5 rounded-xl border border-gray-700">
-        <h2 className="text-lg font-bold mb-3">
-          Receita Mensal
+      {/* CHART */}
+      <div className="
+        bg-[#14171A]
+        border border-[#1E2329]
+        rounded-2xl
+        p-8
+      ">
+
+        <h2 className="text-white font-semibold mb-6">
+          Monthly Revenue
         </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <ResponsiveContainer width="100%" height={320}>
+          <BarChart data={monthly}>
 
-          {monthly.map((m: any) => (
-            <div
-              key={m.month}
-              className="bg-gray-800 p-3 rounded text-center"
-            >
-              <p className="text-sm text-gray-400">
-                Mês {m.month}
-              </p>
-              <p className="text-green-400 font-bold">
-                {Number(m.total).toFixed(2)} AOA
-              </p>
-            </div>
-          ))}
+            <CartesianGrid
+              stroke="#1E2329"
+              vertical={false}
+            />
 
-        </div>
+            <XAxis
+              dataKey="month"
+              stroke="#6B7280"
+            />
+
+            <YAxis
+              stroke="#6B7280"
+            />
+
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#1A1F24",
+                border: "1px solid #2B3139",
+                borderRadius: "12px",
+                color: "#fff"
+              }}
+              formatter={(value: any) =>
+                formatMoney(Number(value ?? 0))
+              }
+            />
+
+            <Bar
+              dataKey="revenue"
+              radius={[6, 6, 0, 0]}
+              fill="#FCD535"
+            />
+
+          </BarChart>
+        </ResponsiveContainer>
+
       </div>
 
     </div>
   )
+}
+
+/* ================= KPI CARD ================= */
+
+function KpiCard({
+  title,
+  value,
+  color
+}: {
+  title: string
+  value: string
+  color: string
+}) {
+  return (
+    <div className="
+      bg-[#14171A]
+      border border-[#1E2329]
+      rounded-2xl
+      p-6
+      hover:bg-[#181C21]
+      transition
+    ">
+      <p className="text-gray-400 text-sm">
+        {title}
+      </p>
+
+      <h2 className={`text-2xl font-semibold mt-3 ${color}`}>
+        {value}
+      </h2>
+    </div>
+  )
+}
+
+/* ================= FORMAT ================= */
+
+function formatMoney(value: number) {
+  return new Intl.NumberFormat("pt-AO", {
+    style: "currency",
+    currency: "AOA",
+    minimumFractionDigits: 2
+  }).format(Number(value ?? 0))
 }

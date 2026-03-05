@@ -20,9 +20,10 @@ export default function OtcOrdemDetalhe() {
   const [loading, setLoading] = useState(true)
 
   const chatRef = useRef<HTMLDivElement>(null)
+  const socketRef = useRef<any>(null)
   const typingTimeout = useRef<any>(null)
 
-  /* ================= LOAD ================= */
+  /* LOAD */
 
   const load = useCallback(async () => {
     try {
@@ -36,82 +37,94 @@ export default function OtcOrdemDetalhe() {
   }, [orderId])
 
   useEffect(() => {
-    if (!orderId) return
-    load()
-  }, [load, orderId])
+  if (!orderId) return
+  load()
+}, [load, orderId])
 
-  /* ================= SOCKET ================= */
+/* SOCKET */
 
-  useEffect(() => {
+useEffect(() => {
 
-    if (!orderId) return
+  if (!orderId) return
 
-    const token = localStorage.getItem("token")
-    if (!token) return
+  const token = localStorage.getItem("token")
+  if (!token) return
 
-    const socket = connectAdminSocket(token)
+  const socket = connectAdminSocket(token)
 
-    socket.emit("admin:join-otc", orderId)
+  socketRef.current = socket
 
-    socket.on("otc:new-message", (msg: any) => {
+  socket.emit("admin:join-otc", orderId)
+
+  /* PRESENCE */
+
+  socket.on("presence:update", (data: any) => {
+    if (data.userId === order?.user?.id) {
+      setOnline(data.isOnline)
+    }
+  })
+
+  /* NEW MESSAGE */
+
+  socket.on("otc:new-message", (msg: any) => {
+    setOrder((prev: any) => ({
+      ...prev,
+      conversation: {
+        ...prev.conversation,
+        messages: [...prev.conversation.messages, msg]
+      }
+    }))
+  })
+
+  /* STATUS UPDATE */
+
+  socket.on("otc:status-update", (data: any) => {
+    if (data.orderId === orderId) {
       setOrder((prev: any) => ({
         ...prev,
-        conversation: {
-          ...prev.conversation,
-          messages: [...prev.conversation.messages, msg]
-        }
+        status: data.status
       }))
-
-      socket.emit("otc:mark-read", orderId)
-    })
-
-    socket.on("otc:status-update", (data: any) => {
-      if (data.orderId === orderId) {
-        setOrder((prev: any) => ({
-          ...prev,
-          status: data.status
-        }))
-      }
-    })
-
-    socket.on("otc:typing", (data: any) => {
-      if (!data?.role || data.role === "ADMIN") return
-      setTyping(true)
-    })
-
-    socket.on("otc:stop-typing", () => {
-      setTyping(false)
-    })
-
-    socket.on("presence:update", (data: any) => {
-      if (data.userId === order?.user?.id) {
-        setOnline(data.isOnline)
-      }
-    })
-
-    return () => {
-      disconnectAdminSocket()
     }
+  })
 
-  }, [orderId, order?.user?.id])
+  /* TYPING */
 
-  /* ================= AUTO SCROLL ================= */
+  socket.on("otc:typing", (data: any) => {
+    if (data.role !== "ADMIN") {
+      setTyping(true)
+    }
+  })
+
+  socket.on("otc:stop-typing", () => {
+    setTyping(false)
+  })
+
+  /* CLEANUP */
+
+  return () => {
+    socket.off("presence:update")
+    socket.off("otc:new-message")
+    socket.off("otc:status-update")
+    socket.off("otc:typing")
+    socket.off("otc:stop-typing")
+    disconnectAdminSocket()
+  }
+
+}, [orderId, order?.user?.id])
+
+  /* AUTO SCROLL */
 
   useEffect(() => {
     if (!chatRef.current) return
     chatRef.current.scrollTop = chatRef.current.scrollHeight
   }, [order?.conversation?.messages])
 
-  /* ================= SEND ================= */
+  /* SEND */
 
   function send() {
     if (!message.trim()) return
 
-    const socket = connectAdminSocket(
-      localStorage.getItem("token") as string
-    )
-
-    socket.emit("otc:message", {
+    socketRef.current.emit("otc:message", {
       orderId,
       message: message.trim()
     })
@@ -122,16 +135,12 @@ export default function OtcOrdemDetalhe() {
   function handleTyping(value: string) {
     setMessage(value)
 
-    const socket = connectAdminSocket(
-      localStorage.getItem("token") as string
-    )
-
-    socket.emit("otc:typing", orderId)
+    socketRef.current.emit("otc:typing", orderId)
 
     clearTimeout(typingTimeout.current)
 
     typingTimeout.current = setTimeout(() => {
-      socket.emit("otc:stop-typing", orderId)
+      socketRef.current.emit("otc:stop-typing", orderId)
     }, 1200)
   }
 
@@ -148,59 +157,71 @@ export default function OtcOrdemDetalhe() {
   function statusBadge(status: string) {
     switch (status) {
       case "CREATED":
-        return "bg-gray-100 text-gray-700"
+        return "bg-gray-600/20 text-gray-300"
       case "PAID":
-        return "bg-yellow-100 text-yellow-700"
+        return "bg-yellow-600/20 text-yellow-400"
       case "RELEASED":
-        return "bg-emerald-100 text-emerald-700"
+        return "bg-emerald-600/20 text-emerald-400"
       case "CANCELLED":
-        return "bg-red-100 text-red-700"
+        return "bg-red-600/20 text-red-400"
       default:
-        return "bg-gray-100 text-gray-700"
+        return "bg-gray-600/20 text-gray-300"
     }
   }
 
-  if (loading) return <div className="p-6">Carregando...</div>
+  if (loading) return <div className="p-8 text-gray-400">Carregando...</div>
   if (!order) return null
 
   return (
-    <div className="flex h-screen bg-[#F5F7FA]">
+    <div className="flex h-screen bg-gray-950 text-white">
 
       {/* LEFT PANEL */}
-      <div className="w-96 bg-white border-r flex flex-col">
+      <div className="w-96 bg-gray-900 border-r border-gray-800 flex flex-col">
 
-        <div className="p-6 border-b">
+        <div className="p-6 border-b border-gray-800 space-y-4">
           <h2 className="text-xl font-semibold">
             Ordem #{order.id}
           </h2>
 
-          <div className="mt-3">
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadge(order.status)}`}>
-              {order.status}
-            </span>
-          </div>
+          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadge(order.status)}`}>
+            {order.status}
+          </span>
         </div>
 
-        <div className="p-6 space-y-4 text-sm">
+        <div className="p-6 space-y-6 text-sm">
 
           <div>
-            <p className="text-gray-500">Utilizador</p>
-            <p className="font-medium flex items-center gap-2">
+            <p className="text-gray-500 text-xs uppercase tracking-wider">
+              Utilizador
+            </p>
+            <p className="font-medium mt-1">
               {order.user?.phone}
-              <span className={`text-xs ${online ? "text-emerald-500" : "text-gray-400"}`}>
-                {online ? "Online" : "Offline"}
-              </span>
             </p>
           </div>
 
           <div>
-            <p className="text-gray-500">Asset</p>
-            <p className="font-medium">{order.asset?.symbol}</p>
+            <p className="text-gray-500 text-xs uppercase tracking-wider">
+              Asset
+            </p>
+            <div className="flex items-center gap-2 mt-1">
+  <p className="font-medium">
+    {order.user?.phone}
+  </p>
+  <span
+    className={`text-xs ${
+      online ? "text-emerald-400" : "text-gray-500"
+    }`}
+  >
+    {online ? "Online" : "Offline"}
+  </span>
+</div>
           </div>
 
           <div>
-            <p className="text-gray-500">Total</p>
-            <p className="font-semibold text-lg">
+            <p className="text-gray-500 text-xs uppercase tracking-wider">
+              Total
+            </p>
+            <p className="text-emerald-400 text-xl font-semibold mt-1">
               {order.totalAoa} Kz
             </p>
           </div>
@@ -208,9 +229,9 @@ export default function OtcOrdemDetalhe() {
         </div>
 
         {order.status === "PAID" && (
-          <div className="m-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-            <p className="text-sm font-medium text-emerald-700">
-              Pagamento confirmado pelo cliente
+          <div className="m-6 p-5 bg-emerald-600/10 border border-emerald-600/30 rounded-2xl">
+            <p className="text-sm text-emerald-400">
+              Pagamento confirmado
             </p>
 
             <button
@@ -224,26 +245,23 @@ export default function OtcOrdemDetalhe() {
 
       </div>
 
-      {/* RIGHT PANEL - CHAT */}
-      <div className="flex-1 flex flex-col bg-white">
+      {/* RIGHT PANEL */}
+      <div className="flex-1 flex flex-col bg-gray-950">
 
-        <div className="px-6 py-4 border-b flex justify-between items-center">
-          <div>
-            <h3 className="font-semibold text-sm">
-              Chat da negociação
-            </h3>
-            {typing && (
-              <p className="text-xs text-gray-400 mt-1">
-                Cliente está digitando...
-              </p>
-            )}
-          </div>
+        <div className="px-6 py-4 border-b border-gray-800">
+          <h3 className="font-semibold text-sm">
+            Chat da negociação
+          </h3>
+          {typing && (
+            <p className="text-xs text-gray-500 mt-1">
+              Cliente está digitando...
+            </p>
+          )}
         </div>
 
-        {/* MESSAGES */}
         <div
           ref={chatRef}
-          className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#F9FAFB]"
+          className="flex-1 overflow-y-auto p-6 space-y-4"
         >
           {order.conversation?.messages.map((m: any) => (
             <div
@@ -251,17 +269,14 @@ export default function OtcOrdemDetalhe() {
               className={`flex ${m.isAdmin ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-sm px-4 py-3 rounded-2xl text-sm shadow-sm
+                className={`max-w-sm px-4 py-3 rounded-2xl text-sm
                   ${m.isAdmin
                     ? "bg-indigo-600 text-white rounded-br-sm"
-                    : "bg-white border border-gray-200 rounded-bl-sm"
+                    : "bg-gray-800 border border-gray-700 rounded-bl-sm"
                   }`}
               >
-                {m.type === "IMAGE"
-                  ? <img src={m.content} className="rounded-xl max-w-full" />
-                  : m.content}
-
-                <div className="text-[10px] opacity-60 mt-2 text-right">
+                {m.content}
+                <div className="text-[10px] opacity-50 mt-2 text-right">
                   {new Date(m.createdAt).toLocaleTimeString()}
                 </div>
               </div>
@@ -269,13 +284,12 @@ export default function OtcOrdemDetalhe() {
           ))}
         </div>
 
-        {/* FIXED INPUT */}
-        <div className="p-4 border-t bg-white flex gap-3">
+        <div className="p-4 border-t border-gray-800 flex gap-3">
           <input
             value={message}
             onChange={(e) => handleTyping(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
-            className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-indigo-500"
+            className="flex-1 bg-gray-900 border border-gray-700 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-indigo-500"
             placeholder="Digite uma mensagem..."
           />
           <button
@@ -287,6 +301,7 @@ export default function OtcOrdemDetalhe() {
         </div>
 
       </div>
+
     </div>
   )
 }

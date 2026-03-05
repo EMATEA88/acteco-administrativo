@@ -17,139 +17,158 @@ import {
   Folder
 } from "lucide-react"
 
-const linkClass =
-  "flex items-center gap-3 px-4 py-2 rounded hover:bg-white/10 transition"
-
 const sectionTitle =
-  "px-4 pt-4 pb-2 text-xs uppercase text-gray-400 tracking-wider"
+  "px-6 pt-6 pb-2 text-[11px] uppercase text-gray-500 tracking-wider"
+
+const linkBase =
+  "flex items-center gap-3 px-6 py-2.5 text-sm rounded-lg transition-all duration-200"
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 bg-secondary text-white h-screen flex flex-col">
+    <aside className="w-64 h-screen bg-[#0B0E11] border-r border-[#1E2329] flex flex-col">
 
-      <div className="p-6 text-xl font-bold border-b border-white/10">
-        ACTECO
+      {/* LOGO FIXO */}
+      <div className="h-16 flex items-center px-6 text-lg font-semibold border-b border-[#1E2329] tracking-wide flex-shrink-0">
+        EMATEA
       </div>
 
-      <nav className="flex-1 overflow-y-auto flex flex-col px-2 py-4">
+      {/* NAV COM SCROLL REAL */}
+      <nav className="flex-1 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-[#1E2329]">
 
-        {/* ================= CORE ================= */}
+        {/* CORE */}
         <div className={sectionTitle}>Core</div>
 
-        <NavLink to="/admin" className={linkClass}>
-          <LayoutDashboard size={18} /> Dashboard
-        </NavLink>
+        <SidebarLink to="/admin" icon={<LayoutDashboard size={18} />}>
+          Dashboard
+        </SidebarLink>
 
-        <NavLink to="/admin/users" className={linkClass}>
-          <Users size={18} /> Utilizadores
-        </NavLink>
+        <SidebarLink to="/admin/users" icon={<Users size={18} />}>
+          Utilizadores
+        </SidebarLink>
 
-        <NavLink to="/admin/logs" className={linkClass}>
-          <FileText size={18} /> Logs
-        </NavLink>
+        <SidebarLink to="/admin/logs" icon={<FileText size={18} />}>
+          Logs
+        </SidebarLink>
 
-        <NavLink to="/admin/notifications" className={linkClass}>
-          <Bell size={18} /> Notificações
-        </NavLink>
+        <SidebarLink to="/admin/notifications" icon={<Bell size={18} />}>
+          Notificações
+        </SidebarLink>
 
-        {/* ================= FINANCEIRO ================= */}
+        {/* FINANCEIRO */}
         <div className={sectionTitle}>Financeiro</div>
 
-        <NavLink to="/admin/banks" className={linkClass}>
-          <Building2 size={18} /> Bancos
-        </NavLink>
+        <SidebarLink to="/admin/banks" icon={<Building2 size={18} />}>
+          Bancos
+        </SidebarLink>
 
-        <NavLink to="/admin/recharges" className={linkClass}>
-          <CreditCard size={18} /> Depósitos
-        </NavLink>
+        <SidebarLink to="/admin/recharges" icon={<CreditCard size={18} />}>
+          Depósitos
+        </SidebarLink>
 
-        <NavLink to="/admin/withdrawals" className={linkClass}>
-          <ArrowDownUp size={18} /> Levantamentos
-        </NavLink>
+        <SidebarLink to="/admin/withdrawals" icon={<ArrowDownUp size={18} />}>
+          Levantamentos
+        </SidebarLink>
 
-        <NavLink to="/admin/transactions" className={linkClass}>
-          <Repeat size={18} /> Transações
-        </NavLink>
+        <SidebarLink to="/admin/transactions" icon={<Repeat size={18} />}>
+          Transações
+        </SidebarLink>
 
-        <NavLink to="/admin/commissions" className={linkClass}>
-          <Repeat size={18} /> Comissões
-        </NavLink>
+        <SidebarLink to="/admin/commissions" icon={<Repeat size={18} />}>
+          Comissões
+        </SidebarLink>
 
-        {/* ✅ NOVO: INVESTIMENTOS */}
-        <NavLink to="/admin/applications" className={linkClass}>
-          <LineChart size={18} /> Investimentos
-        </NavLink>
+        <SidebarLink to="/admin/applications" icon={<LineChart size={18} />}>
+          Investimentos
+        </SidebarLink>
 
-        <NavLink to="/admin/settlements" className={linkClass}>
-          <Folder size={18} /> Partner Settlements
-        </NavLink>
+        <SidebarLink to="/admin/settlements" icon={<Folder size={18} />}>
+          Partner Settlements
+        </SidebarLink>
 
-        <NavLink to="/admin/revenue" className={linkClass}>
-          <DollarSign size={18} /> Revenue Control
-        </NavLink>
+        <SidebarLink to="/admin/revenue" icon={<DollarSign size={18} />}>
+          Revenue Control
+        </SidebarLink>
 
-        <NavLink to="/admin/finance" className={linkClass}>
-          <BarChart3 size={18} /> Finance Dashboard
-        </NavLink>
+        <SidebarLink to="/admin/finance" icon={<BarChart3 size={18} />}>
+          Finance Dashboard
+        </SidebarLink>
 
-        {/* ================= SERVIÇOS ================= */}
+        {/* SERVIÇOS */}
         <div className={sectionTitle}>Serviços</div>
 
-        <NavLink to="/admin/services" className={linkClass}>
+        <SidebarLink to="/admin/services">
           Service Requests
-        </NavLink>
+        </SidebarLink>
 
-        <NavLink to="/admin/kyc" className={linkClass}>
-          <ShieldCheck size={18} /> KYC Verification
-        </NavLink>
+        <SidebarLink to="/admin/kyc" icon={<ShieldCheck size={18} />}>
+          KYC Verification
+        </SidebarLink>
 
-        <NavLink to="/admin/service-refunds" className={linkClass}>
+        <SidebarLink to="/admin/service-refunds">
           Service Refunds
-        </NavLink>
+        </SidebarLink>
 
-        <NavLink to="/admin/support" className={linkClass}>
-          Support Chat
-        </NavLink>
-
-        <NavLink to="/admin/partners" className={linkClass}>
+        <SidebarLink to="/admin/partners">
           Partners
-        </NavLink>
+        </SidebarLink>
 
-        {/* ================= OTC ================= */}
+        {/* OTC */}
         <div className={sectionTitle}>OTC</div>
 
-        <NavLink to="/admin/otc" className={linkClass}>
-          <BarChart3 size={18} /> OTC Dashboard
-        </NavLink>
+        <SidebarLink to="/admin/otc" icon={<BarChart3 size={18} />}>
+          OTC Dashboard
+        </SidebarLink>
 
-        <NavLink to="/admin/otc/orders" className={linkClass}>
+        <SidebarLink to="/admin/otc/orders">
           OTC Orders
-        </NavLink>
+        </SidebarLink>
 
-        <NavLink to="/admin/otc/assets" className={linkClass}>
+        <SidebarLink to="/admin/otc/assets">
           OTC Assets
-        </NavLink>
+        </SidebarLink>
 
-        <NavLink to="/admin/otc/stats" className={linkClass}>
+        <SidebarLink to="/admin/otc/stats">
           OTC Stats
-        </NavLink>
+        </SidebarLink>
 
-        <NavLink to="/admin/otc/audit" className={linkClass}>
-          <Activity size={18} /> OTC Auditoria
-        </NavLink>
+        <SidebarLink to="/admin/otc/audit" icon={<Activity size={18} />}>
+          OTC Auditoria
+        </SidebarLink>
 
-        <NavLink to="/admin/otc/price-history" className={linkClass}>
-          <LineChart size={18} /> Histórico Preços
-        </NavLink>
+        <SidebarLink to="/admin/otc/price-history" icon={<LineChart size={18} />}>
+          Histórico Preços
+        </SidebarLink>
 
-        {/* ================= OUTROS ================= */}
+        {/* OUTROS */}
         <div className={sectionTitle}>Outros</div>
 
-        <NavLink to="/admin/gift" className={linkClass}>
-          <Gift size={18} /> Gift
-        </NavLink>
+        <SidebarLink to="/admin/gift" icon={<Gift size={18} />}>
+          Gift
+        </SidebarLink>
 
       </nav>
     </aside>
+  )
+}
+
+/* ================= LINK PROFISSIONAL ================= */
+
+function SidebarLink({ to, icon, children }: any) {
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `
+        ${linkBase}
+        ${isActive
+          ? "bg-[#1A1F24] text-white"
+          : "text-gray-400 hover:text-white hover:bg-[#14171A]"
+        }
+      `
+      }
+    >
+      {icon && icon}
+      <span className="truncate">{children}</span>
+    </NavLink>
   )
 }

@@ -87,27 +87,39 @@ export default function Recharges() {
   }
 
   if (loading) {
-    return <div className="p-6">Carregando recargas...</div>
+    return (
+      <div className="p-8 text-gray-400">
+        Carregando recargas...
+      </div>
+    )
   }
 
   return (
-    <div className="p-6">
+    <div className="p-8 space-y-8 text-white">
 
-      <h1 className="text-2xl font-bold mb-6">
+      {/* HEADER */}
+      <h1 className="text-3xl font-bold tracking-tight">
         Depósitos
       </h1>
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
+      {/* TABLE CARD */}
+      <div className="
+        bg-gray-950
+        border border-gray-800
+        rounded-2xl
+        shadow-xl
+        overflow-hidden
+      ">
 
         <table className="w-full text-sm">
 
-          <thead className="bg-gray-100 text-left">
+          <thead className="bg-gray-900 text-gray-400 uppercase text-xs tracking-wider">
             <tr>
-              <th className="p-3">ID</th>
-              <th className="p-3">Usuário</th>
-              <th className="p-3">Valor</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Ação</th>
+              <th className="p-4 text-left">ID</th>
+              <th className="p-4 text-left">Usuário</th>
+              <th className="p-4 text-left">Valor</th>
+              <th className="p-4 text-left">Status</th>
+              <th className="p-4 text-left">Ação</th>
             </tr>
           </thead>
 
@@ -115,7 +127,7 @@ export default function Recharges() {
 
             {items.length === 0 && (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-gray-500">
+                <td colSpan={5} className="p-8 text-center text-gray-500">
                   Nenhuma recarga encontrada
                 </td>
               </tr>
@@ -126,30 +138,48 @@ export default function Recharges() {
               const isProcessing = processingId === r.id
 
               return (
-                <tr key={r.id} className="border-t">
+                <tr
+                  key={r.id}
+                  className="
+                    border-t border-gray-800
+                    hover:bg-gray-800/40
+                    transition duration-200
+                  "
+                >
 
-                  <td className="p-3">{r.id}</td>
+                  <td className="p-4 text-gray-400 text-xs">
+                    #{r.id}
+                  </td>
 
-                  <td className="p-3">
+                  <td className="p-4 font-semibold">
                     {r.user?.phone || '—'}
                   </td>
 
-                  <td className="p-3 font-medium">
-                    {r.amount.toLocaleString()} Kz
+                  <td className="p-4 text-emerald-400 font-semibold">
+                    {formatMoney(r.amount)}
                   </td>
 
-                  <td className="p-3">
+                  <td className="p-4">
                     <StatusBadge status={r.status} />
                   </td>
 
-                  <td className="p-3 flex gap-2">
+                  <td className="p-4 flex gap-2">
 
                     {r.status === 'PENDING' && (
                       <>
                         <button
                           disabled={isProcessing}
                           onClick={() => approve(r.id)}
-                          className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1 rounded"
+                          className="
+                            bg-emerald-600
+                            hover:bg-emerald-700
+                            disabled:opacity-50
+                            text-white
+                            px-3 py-1
+                            rounded-lg
+                            text-xs
+                            transition
+                          "
                         >
                           {isProcessing ? 'Processando...' : 'Aprovar'}
                         </button>
@@ -157,7 +187,16 @@ export default function Recharges() {
                         <button
                           disabled={isProcessing}
                           onClick={() => reject(r.id)}
-                          className="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-1 rounded"
+                          className="
+                            bg-red-600
+                            hover:bg-red-700
+                            disabled:opacity-50
+                            text-white
+                            px-3 py-1
+                            rounded-lg
+                            text-xs
+                            transition
+                          "
                         >
                           {isProcessing ? 'Processando...' : 'Rejeitar'}
                         </button>
@@ -180,17 +219,26 @@ export default function Recharges() {
   )
 }
 
+/* ================= STATUS BADGE ================= */
+
 function StatusBadge({ status }: { status: string }) {
 
   const styles: Record<string, string> = {
-    PENDING: 'bg-yellow-100 text-yellow-700',
-    APPROVED: 'bg-green-100 text-green-700',
-    REJECTED: 'bg-red-100 text-red-700',
+    PENDING: 'bg-yellow-600/20 text-yellow-400',
+    APPROVED: 'bg-emerald-600/20 text-emerald-400',
+    REJECTED: 'bg-red-600/20 text-red-400',
   }
 
   return (
-    <span className={`px-2 py-1 rounded text-xs font-semibold ${styles[status] || 'bg-gray-100 text-gray-600'}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${styles[status] || 'bg-gray-600/20 text-gray-400'}`}>
       {status}
     </span>
   )
+}
+
+function formatMoney(value: number) {
+  return new Intl.NumberFormat("pt-AO", {
+    style: "currency",
+    currency: "AOA",
+  }).format(value ?? 0)
 }
